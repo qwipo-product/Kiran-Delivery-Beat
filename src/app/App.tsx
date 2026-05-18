@@ -167,28 +167,6 @@ export default function App() {
                 >
                   <Menu className="w-6 h-6" />
                 </button>
-                <div className="inline-flex bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setActiveTab('3pl')}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-                      activeTab === '3pl'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    3PL Logistics
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('self')}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-                      activeTab === 'self'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Self Logistics
-                  </button>
-                </div>
               </div>
               <button className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                 <User className="w-5 h-5 text-gray-600" />
