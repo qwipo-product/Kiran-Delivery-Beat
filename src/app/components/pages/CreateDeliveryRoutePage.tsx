@@ -127,19 +127,54 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
 
         {/* Controls — Delivery Date + Filter stacked */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-3 flex-shrink-0">
-          {/* Delivery Date */}
-          <div className="mb-3">
-            <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
-              Delivery Date
-            </label>
-            <div className="relative w-44">
-              <input
-                type="date"
-                value={deliveryDate}
-                onChange={(e) => setDeliveryDate(e.target.value)}
-                className="w-full px-3 py-2 pr-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent"
-              />
-              <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          {/* Delivery Date + Delivery Type side by side */}
+          <div className="flex items-end gap-8 mb-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+                Delivery Date
+              </label>
+              <div className="relative w-44">
+                <input
+                  type="date"
+                  value={deliveryDate}
+                  onChange={(e) => setDeliveryDate(e.target.value)}
+                  className="w-full px-3 py-2 pr-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent"
+                />
+                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Delivery Type radio buttons */}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+                Delivery Type
+              </label>
+              <div className="flex items-center gap-5 h-9">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="deliveryRouteType"
+                    value="Self"
+                    checked={activeTab === 'self'}
+                    onChange={() => {}}
+                    className="w-4 h-4 accent-[#2D6EF5]"
+                    readOnly
+                  />
+                  <span className="text-sm text-gray-700 font-medium">Self</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="deliveryRouteType"
+                    value="3PL"
+                    checked={activeTab === '3pl'}
+                    onChange={() => {}}
+                    className="w-4 h-4 accent-[#2D6EF5]"
+                    readOnly
+                  />
+                  <span className="text-sm text-gray-700 font-medium">3PL</span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -339,51 +374,20 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
         </div>
 
         {/* Bottom Action Buttons */}
-        <div className="flex items-center justify-between pt-3 flex-shrink-0">
-          {/* Radio buttons — Self / 3PL */}
-          <div className="flex items-center gap-5">
-            <span className="text-sm font-medium text-gray-600">Delivery Type:</span>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="deliveryRouteType"
-                value="Self"
-                checked={activeTab === 'self'}
-                onChange={() => {}}
-                className="w-4 h-4 accent-[#2D6EF5]"
-                readOnly
-              />
-              <span className="text-sm text-gray-700 font-medium">Self</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="deliveryRouteType"
-                value="3PL"
-                checked={activeTab === '3pl'}
-                onChange={() => {}}
-                className="w-4 h-4 accent-[#2D6EF5]"
-                readOnly
-              />
-              <span className="text-sm text-gray-700 font-medium">3PL</span>
-            </label>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={onBack}
-              className="px-5 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-sm"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirm}
-              disabled={selectedOrderIds.length === 0}
-              className="px-5 py-2 bg-[#2D6EF5] hover:bg-[#2557D6] text-white disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
-            >
-              Plan Route ({selectedOrderIds.length})
-            </Button>
-          </div>
+        <div className="flex items-center justify-end gap-3 pt-3 flex-shrink-0">
+          <Button
+            onClick={onBack}
+            className="px-5 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-sm"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={selectedOrderIds.length === 0}
+            className="px-5 py-2 bg-[#2D6EF5] hover:bg-[#2557D6] text-white disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+          >
+            Plan Route ({selectedOrderIds.length})
+          </Button>
         </div>
       </div>
       {showOptimizedModal && (
