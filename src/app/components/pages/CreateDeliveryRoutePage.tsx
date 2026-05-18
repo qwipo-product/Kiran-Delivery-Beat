@@ -32,6 +32,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [showOptimizedModal, setShowOptimizedModal] = useState(false);
+  const [selectedDeliveryType, setSelectedDeliveryType] = useState<'3pl' | 'self'>(activeTab);
 
   // Map DataContext orders to local Order format, excluding Offline Orders
   const allOrders: Order[] = useMemo(() => contextOrders
@@ -60,8 +61,8 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
   }, [allOrders]);
 
   const filteredOrders = useMemo(() =>
-    activeTab === '3pl' ? allOrders : allOrders.filter(o => o.deliveryType === 'Self')
-  , [allOrders, activeTab]);
+    selectedDeliveryType === '3pl' ? allOrders : allOrders.filter(o => o.deliveryType === 'Self')
+  , [allOrders, selectedDeliveryType]);
 
   const handleOrderDateToggle = (date: string) => {
     setSelectedOrderDates(prev =>
@@ -155,10 +156,13 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                     type="radio"
                     name="deliveryRouteType"
                     value="Self"
-                    checked={activeTab === 'self'}
-                    onChange={() => {}}
+                    checked={selectedDeliveryType === 'self'}
+                    onChange={() => {
+                      setSelectedDeliveryType('self');
+                      setSelectedOrderIds([]);
+                      setSelectAll(false);
+                    }}
                     className="w-4 h-4 accent-[#2D6EF5]"
-                    readOnly
                   />
                   <span className="text-sm text-gray-700 font-medium">Self</span>
                 </label>
@@ -167,10 +171,13 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                     type="radio"
                     name="deliveryRouteType"
                     value="3PL"
-                    checked={activeTab === '3pl'}
-                    onChange={() => {}}
+                    checked={selectedDeliveryType === '3pl'}
+                    onChange={() => {
+                      setSelectedDeliveryType('3pl');
+                      setSelectedOrderIds([]);
+                      setSelectAll(false);
+                    }}
                     className="w-4 h-4 accent-[#2D6EF5]"
-                    readOnly
                   />
                   <span className="text-sm text-gray-700 font-medium">3PL</span>
                 </label>
