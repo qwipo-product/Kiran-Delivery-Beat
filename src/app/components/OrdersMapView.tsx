@@ -207,9 +207,6 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onRevertOf
                       <div className="py-1">
                         <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
                           <div className="font-semibold text-gray-900 text-sm">{groupOrders[0].retailerName}</div>
-                          {isOffline && (
-                            <span className="text-xs bg-orange-50 text-orange-500 border border-orange-200 px-1.5 py-0.5 rounded font-medium">Offline</span>
-                          )}
                         </div>
                         <div className="text-xs text-gray-500 mb-3 flex items-start gap-1">
                           <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0 text-[#2D6EF5]" />
