@@ -175,9 +175,6 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onRevertOf
                     <Tooltip direction="top" offset={[0, -44]} opacity={1} className="leaflet-order-tooltip">
                       <div style={{ minWidth: '190px', fontFamily: 'inherit' }}>
                         <div style={{ fontWeight: 600, fontSize: '13px', color: '#111827', marginBottom: '6px', paddingBottom: '6px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          {isOffline && (
-                            <span style={{ background: '#FFF7ED', color: '#F97316', fontSize: '10px', fontWeight: 600, padding: '1px 5px', borderRadius: '4px', border: '1px solid #fed7aa' }}>OFFLINE</span>
-                          )}
                           {groupOrders[0].retailerName}
                           {count > 1 && <span style={{ fontWeight: 400, fontSize: '11px', color: '#6b7280', marginLeft: '2px' }}>+{count - 1} more</span>}
                         </div>
