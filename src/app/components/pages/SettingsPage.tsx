@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Settings as SettingsIcon, User, Truck, List, CreditCard, Users, Clock, CalendarX, Plus, Trash2, RotateCcw, Save, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '../ui/input';
 import { toast } from 'sonner';
+import { useData } from '../../context/DataContext';
 
 const warehouseAddresses = [
   {
@@ -246,6 +247,8 @@ const exclusionsData = [
 ];
 
 function DeliveryTab() {
+  const { logisticsSelection, setLogisticsSelection } = useData();
+  const [pendingLogistics, setPendingLogistics] = useState<'both' | 'self' | '3pl'>(logisticsSelection);
   const [routeConfig, setRouteConfig] = useState({
     serviceTime: '12',
     maxTravelTime: '8.5',
@@ -253,7 +256,6 @@ function DeliveryTab() {
     maxDistance: '50',
   });
   const [ondcCategory, setOndcCategory] = useState('Grocery');
-  const [logisticsDefault, setLogisticsDefault] = useState<'both' | 'self' | '3pl'>('both');
   const [exclusions, setExclusions] = useState(exclusionsData);
 
   const handleDeleteExclusion = (id: number) => {
@@ -422,7 +424,7 @@ function DeliveryTab() {
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-base font-semibold text-gray-900">Logistics Selection</h2>
           <button
-            onClick={() => toast.success('Logistics default selection saved.')}
+            onClick={() => { setLogisticsSelection(pendingLogistics); toast.success('Logistics selection saved.'); }}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white rounded-md text-sm hover:bg-gray-900"
           >
             <Save className="w-3.5 h-3.5" />
@@ -439,19 +441,19 @@ function DeliveryTab() {
             <label
               key={option.value}
               className="flex items-start gap-3 cursor-pointer group"
-              onClick={() => setLogisticsDefault(option.value as 'both' | 'self' | '3pl')}
+              onClick={() => setPendingLogistics(option.value as 'both' | 'self' | '3pl')}
             >
               <div className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                logisticsDefault === option.value
+                pendingLogistics === option.value
                   ? 'border-[#2D6EF5] bg-white'
                   : 'border-gray-300 bg-white group-hover:border-[#2D6EF5]'
               }`}>
-                {logisticsDefault === option.value && (
+                {pendingLogistics === option.value && (
                   <div className="w-2 h-2 rounded-full bg-[#2D6EF5]" />
                 )}
               </div>
               <div>
-                <p className={`text-sm font-medium ${logisticsDefault === option.value ? 'text-gray-900' : 'text-gray-700'}`}>
+                <p className={`text-sm font-medium ${pendingLogistics === option.value ? 'text-gray-900' : 'text-gray-700'}`}>
                   {option.label}
                   {option.value === 'both' && (
                     <span className="ml-2 text-xs font-normal text-[#2D6EF5] bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full">Default</span>

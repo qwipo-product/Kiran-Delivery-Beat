@@ -26,13 +26,17 @@ interface CreateDeliveryRoutePageProps {
 }
 
 export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, activeTab = '3pl' }: CreateDeliveryRoutePageProps) {
-  const { orders: contextOrders } = useData();
+  const { orders: contextOrders, logisticsSelection } = useData();
   const [deliveryDate, setDeliveryDate] = useState('2026-02-20');
   const [selectedOrderDates, setSelectedOrderDates] = useState<string[]>(['7-1-2025']);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [showOptimizedModal, setShowOptimizedModal] = useState(false);
-  const [selectedDeliveryTypes, setSelectedDeliveryTypes] = useState<Set<'3pl' | 'self'>>(new Set(['3pl', 'self']));
+  const [selectedDeliveryTypes, setSelectedDeliveryTypes] = useState<Set<'3pl' | 'self'>>(() => {
+    if (logisticsSelection === 'self') return new Set<'3pl' | 'self'>(['self']);
+    if (logisticsSelection === '3pl') return new Set<'3pl' | 'self'>(['3pl']);
+    return new Set<'3pl' | 'self'>(['3pl', 'self']); // 'both'
+  });
 
   // Map DataContext orders to local Order format, excluding Offline Orders
   const allOrders: Order[] = useMemo(() => contextOrders

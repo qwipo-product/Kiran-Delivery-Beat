@@ -24,7 +24,7 @@ export interface Order {
   salesPerson: string;
   beatName: string;
   mobileNumber: string;
-  status: 'Ready for Planning' | 'In Planning' | 'Trip Assigned' | 'In Transit' | 'Delivered' | 'Partial Return' | 'Returned' | 'Cancelled' | 'Discarded' | 'Offline Order';
+  status: 'Ready for Planning' | 'In Planning' | 'Trip Assigned' | 'In Transit' | 'Delivered' | 'Partial Return' | 'Returned' | 'Cancelled' | 'Discarded';
   tripNumber: string;
   latitude?: number;
   longitude?: number;
@@ -72,6 +72,8 @@ interface DataContextType {
   orders: Order[];
   trips: Trip[];
   deliveryRoutes: DeliveryRoute[];
+  logisticsSelection: 'both' | 'self' | '3pl';
+  setLogisticsSelection: (value: 'both' | 'self' | '3pl') => void;
   addCustomer: (customer: Customer) => void;
   updateCustomer: (id: string, customer: Partial<Customer>) => void;
   deleteCustomer: (id: string) => void;
@@ -1314,6 +1316,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [trips, setTrips] = useState<Trip[]>(initialTrips);
   const [deliveryRoutes, setDeliveryRoutes] = useState<DeliveryRoute[]>(initialDeliveryRoutes);
+  const [logisticsSelection, setLogisticsSelection] = useState<'both' | 'self' | '3pl'>('both');
 
   // Customer Actions
   const addCustomer = (customer: Customer) => {
@@ -1437,6 +1440,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         orders,
         trips,
         deliveryRoutes,
+        logisticsSelection,
+        setLogisticsSelection,
         addCustomer,
         updateCustomer,
         deleteCustomer,
