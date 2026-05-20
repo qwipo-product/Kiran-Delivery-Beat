@@ -455,11 +455,7 @@ function DeliveryTab() {
               <div>
                 <p className={`text-sm font-medium ${pendingLogistics === option.value ? 'text-gray-900' : 'text-gray-700'}`}>
                   {option.label}
-                  {option.value === 'both' && (
-                    <span className="ml-2 text-xs font-normal text-[#2D6EF5] bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full">Default</span>
-                  )}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">{option.description}</p>
               </div>
             </label>
           ))}
