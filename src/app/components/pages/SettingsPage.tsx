@@ -274,6 +274,7 @@ function DeliveryTab() {
     const labels = preferredProviders.map(v => providerOptions.find(o => o.value === v)?.label).filter(Boolean).join(', ');
     toast.success(`Preferred providers saved: ${labels}`);
   };
+  const [logisticsDefault, setLogisticsDefault] = useState<'both' | 'self' | '3pl'>('both');
   const [exclusions, setExclusions] = useState(exclusionsData);
 
   const handleDeleteExclusion = (id: number) => {
@@ -480,6 +481,44 @@ function DeliveryTab() {
             })}
           </div>
         )}
+      </div>
+
+      {/* Logistics Default Selection */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">Logistics Default Selection</h2>
+        <p className="text-xs text-gray-500 mb-5">Choose the default logistics mode used across the platform.</p>
+        <div className="flex items-center gap-8">
+          {[
+            { value: 'both', label: 'Tech For Both (Self + 3PL)', description: 'Default' },
+            { value: 'self', label: 'Tech For Self', description: 'Self logistics only' },
+            { value: '3pl', label: 'Tech For 3PL', description: '3PL logistics only' },
+          ].map(option => (
+            <label
+              key={option.value}
+              className="flex items-start gap-3 cursor-pointer group"
+              onClick={() => setLogisticsDefault(option.value as 'both' | 'self' | '3pl')}
+            >
+              <div className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                logisticsDefault === option.value
+                  ? 'border-[#2D6EF5] bg-white'
+                  : 'border-gray-300 bg-white group-hover:border-[#2D6EF5]'
+              }`}>
+                {logisticsDefault === option.value && (
+                  <div className="w-2 h-2 rounded-full bg-[#2D6EF5]" />
+                )}
+              </div>
+              <div>
+                <p className={`text-sm font-medium ${logisticsDefault === option.value ? 'text-gray-900' : 'text-gray-700'}`}>
+                  {option.label}
+                  {option.value === 'both' && (
+                    <span className="ml-2 text-xs font-normal text-[#2D6EF5] bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full">Default</span>
+                  )}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">{option.description}</p>
+              </div>
+            </label>
+          ))}
+        </div>
       </div>
 
       {/* Exclusions */}
