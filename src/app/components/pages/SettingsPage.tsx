@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, User, Truck, List, CreditCard, Users, Clock, CalendarX, Plus, Trash2, RotateCcw, Save, Star, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Settings as SettingsIcon, User, Truck, List, CreditCard, Users, Clock, CalendarX, Plus, Trash2, RotateCcw, Save, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '../ui/input';
-import { MultiSelect } from '../ui/multi-select';
 import { toast } from 'sonner';
 
 const warehouseAddresses = [
@@ -254,26 +253,6 @@ function DeliveryTab() {
     maxDistance: '50',
   });
   const [ondcCategory, setOndcCategory] = useState('Grocery');
-  const [preferredProviders, setPreferredProviders] = useState<string[]>([]);
-  const [savedProviders, setSavedProviders] = useState<string[]>([]);
-
-  const providerOptions = [
-    { label: 'All', value: 'all' },
-    { label: 'Prorouting', value: 'prorouting' },
-    { label: 'ONDC Pramaaan Logistics', value: 'ondc' },
-    { label: 'Delhivery', value: 'delhivery' },
-    { label: 'Blue Dart', value: 'bluedart' },
-  ];
-
-  const handleSaveProviders = () => {
-    if (preferredProviders.length === 0) {
-      toast.error('Please select at least one provider before saving.');
-      return;
-    }
-    setSavedProviders(preferredProviders);
-    const labels = preferredProviders.map(v => providerOptions.find(o => o.value === v)?.label).filter(Boolean).join(', ');
-    toast.success(`Preferred providers saved: ${labels}`);
-  };
   const [logisticsDefault, setLogisticsDefault] = useState<'both' | 'self' | '3pl'>('both');
   const [exclusions, setExclusions] = useState(exclusionsData);
 
@@ -436,51 +415,6 @@ function DeliveryTab() {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Preferred Providers */}
-      <div className="bg-white border border-gray-200 rounded-lg p-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <Star className="w-4 h-4 text-gray-500" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-900">Preferred Providers</p>
-              <p className="text-xs text-gray-500 mt-0.5">Select your preferred logistics provider for delivery assignments.</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-64">
-              <MultiSelect
-                options={providerOptions}
-                value={preferredProviders}
-                onChange={setPreferredProviders}
-                placeholder="Select providers..."
-              />
-            </div>
-            <button
-              onClick={handleSaveProviders}
-              className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 whitespace-nowrap"
-            >
-              <Save className="w-3.5 h-3.5" />
-              Save
-            </button>
-          </div>
-        </div>
-        {savedProviders.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-500 font-medium">Saved:</span>
-            {savedProviders.map(v => {
-              const label = providerOptions.find(o => o.value === v)?.label;
-              return (
-                <span key={v} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  {label}
-                </span>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {/* Logistics Default Selection */}
