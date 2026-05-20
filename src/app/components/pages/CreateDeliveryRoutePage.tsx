@@ -32,7 +32,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [showOptimizedModal, setShowOptimizedModal] = useState(false);
-  const [selectedDeliveryType, setSelectedDeliveryType] = useState<'3pl' | 'self'>(activeTab);
+  const [selectedDeliveryTypes, setSelectedDeliveryTypes] = useState<Set<'3pl' | 'self'>>(new Set(['3pl', 'self']));
 
   // Map DataContext orders to local Order format, excluding Offline Orders
   const allOrders: Order[] = useMemo(() => contextOrders
@@ -61,8 +61,11 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
   }, [allOrders]);
 
   const filteredOrders = useMemo(() =>
-    selectedDeliveryType === '3pl' ? allOrders : allOrders.filter(o => o.deliveryType === 'Self')
-  , [allOrders, selectedDeliveryType]);
+    allOrders.filter(o => {
+      const type = o.deliveryType === '3PL' ? '3pl' : 'self';
+      return selectedDeliveryTypes.has(type);
+    })
+  , [allOrders, selectedDeliveryTypes]);
 
   const handleOrderDateToggle = (date: string) => {
     setSelectedOrderDates(prev =>
@@ -151,36 +154,25 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                 Delivery Type
               </label>
               <div className="flex items-center gap-5 h-9">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="deliveryRouteType"
-                    value="Self"
-                    checked={selectedDeliveryType === 'self'}
-                    onChange={() => {
-                      setSelectedDeliveryType('self');
-                      setSelectedOrderIds([]);
-                      setSelectAll(false);
-                    }}
-                    className="w-4 h-4 accent-[#2D6EF5]"
-                  />
-                  <span className="text-sm text-gray-700 font-medium">Self</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="deliveryRouteType"
-                    value="3PL"
-                    checked={selectedDeliveryType === '3pl'}
-                    onChange={() => {
-                      setSelectedDeliveryType('3pl');
-                      setSelectedOrderIds([]);
-                      setSelectAll(false);
-                    }}
-                    className="w-4 h-4 accent-[#2D6EF5]"
-                  />
-                  <span className="text-sm text-gray-700 font-medium">3PL</span>
-                </label>
+                {([{ value: 'self', label: 'Self' }, { value: '3pl', label: '3PL' }] as { value: '3pl' | 'self', label: string }[]).map(opt => (
+                  <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={selectedDeliveryTypes.has(opt.value)}
+                      onCheckedChange={(checked) => {
+                        setSelectedDeliveryTypes(prev => {
+                          const next = new Set(prev);
+                          if (checked) next.add(opt.value);
+                          else next.delete(opt.value);
+                          return next;
+                        });
+                        setSelectedOrderIds([]);
+                        setSelectAll(false);
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700 font-medium">{opt.label}</span>
+                  </label>
+                ))}
               </div>
             </div>
           </div>
