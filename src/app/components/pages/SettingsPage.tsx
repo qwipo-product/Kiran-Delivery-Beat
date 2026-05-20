@@ -417,10 +417,10 @@ function DeliveryTab() {
         </div>
       </div>
 
-      {/* Logistics Default Selection */}
+      {/* Logistics Selection */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-base font-semibold text-gray-900">Logistics Default Selection</h2>
+          <h2 className="text-base font-semibold text-gray-900">Logistics Selection</h2>
           <button
             onClick={() => toast.success('Logistics default selection saved.')}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white rounded-md text-sm hover:bg-gray-900"
