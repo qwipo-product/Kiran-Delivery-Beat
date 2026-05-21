@@ -1,7 +1,7 @@
 import { ArrowLeft, Calendar, Store, User, MapPin, Hash, IndianRupee, Weight, Package, X, List, ChevronDown, Filter } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { OptimizedRoutesModal } from '../OptimizedRoutesModal';
 import { useData } from '../../context/DataContext';
 
@@ -41,6 +41,17 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
   const [beatFilterOpen, setBeatFilterOpen] = useState(false);
   const [pendingBeats, setPendingBeats] = useState<string[]>([]);
   const [appliedBeats, setAppliedBeats] = useState<string[]>([]);
+  const beatFilterRef = useRef<HTMLTableCellElement>(null);
+  useEffect(() => {
+    if (!beatFilterOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (beatFilterRef.current && !beatFilterRef.current.contains(e.target as Node)) {
+        setBeatFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [beatFilterOpen]);
 
   // Map DataContext orders to local Order format, excluding Offline Orders
   const allOrders: Order[] = useMemo(() => contextOrders
@@ -263,11 +274,6 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
             </label>
           </div>
 
-          {/* Click-outside overlay to close beat filter */}
-          {beatFilterOpen && (
-            <div className="fixed inset-0 z-40" onClick={() => setBeatFilterOpen(false)} />
-          )}
-
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="min-w-full">
@@ -297,7 +303,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                       Sales Person
                     </div>
                   </th>
-                  <th className="px-4 py-2.5 text-left bg-gray-50 relative">
+                  <th ref={beatFilterRef} className="px-4 py-2.5 text-left bg-gray-50 relative">
                     <button
                       onClick={() => { setPendingBeats(appliedBeats); setBeatFilterOpen(v => !v); }}
                       className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-[#2D6EF5] transition-colors"
@@ -311,7 +317,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                       }
                     </button>
                     {beatFilterOpen && (
-                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-52" onClick={e => e.stopPropagation()}>
+                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-52">
                         <div className="px-3 py-2 border-b border-gray-100 text-xs font-semibold text-gray-700">Filter by Beat Name</div>
                         <div className="max-h-48 overflow-y-auto py-1">
                           {allBeatNames.map(beat => (
