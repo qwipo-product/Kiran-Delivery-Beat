@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Store, User, MapPin, Hash, IndianRupee, Weight, Package, X } from 'lucide-react';
+import { ArrowLeft, Calendar, Store, User, MapPin, Hash, IndianRupee, Weight, Package, X, List } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import { useState, useMemo } from 'react';
@@ -361,25 +361,23 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
           </div>
 
           {/* Summary Footer */}
-          {selectedOrderIds.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-              <span className="text-sm text-gray-600">
-                <span className="font-semibold text-gray-900">{selectedOrderIds.length}</span> order{selectedOrderIds.length !== 1 ? 's' : ''} selected
-              </span>
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-1.5">
-                  <IndianRupee className="w-4 h-4 text-[#2D6EF5]" />
-                  <span className="text-sm text-gray-600">Total:</span>
-                  <span className="text-sm font-bold text-gray-900">₹ {totalInvoiceValue.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Package className="w-4 h-4 text-[#2D6EF5]" />
-                  <span className="text-sm text-gray-600">Weight:</span>
-                  <span className="text-sm font-bold text-gray-900">{totalVolWeight.toFixed(2)} Kgs</span>
-                </div>
-              </div>
+          <div className="flex items-center gap-8 px-4 py-3 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <List className="w-4 h-4 text-[#2D6EF5]" />
+              <span className="text-sm text-gray-600">Selected Orders:</span>
+              <span className="text-sm font-bold text-gray-900">{selectedOrderIds.length}</span>
             </div>
-          )}
+            <div className="flex items-center gap-2">
+              <IndianRupee className="w-4 h-4 text-[#2D6EF5]" />
+              <span className="text-sm text-gray-600">Total Invoice Value:</span>
+              <span className="text-sm font-bold text-gray-900">₹ {totalInvoiceValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Package className="w-4 h-4 text-[#2D6EF5]" />
+              <span className="text-sm text-gray-600">Total Vol. Weight:</span>
+              <span className="text-sm font-bold text-gray-900">{totalVolWeight.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Kgs</span>
+            </div>
+          </div>
         </div>
 
         {/* Bottom Action Buttons */}
