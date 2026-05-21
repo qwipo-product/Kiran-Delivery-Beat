@@ -266,13 +266,13 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                   <th className="px-4 py-2.5 text-left bg-gray-50">
                     <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <Calendar className="w-3.5 h-3.5 text-[#2D6EF5]" />
-                      Date
+                      Order Date
                     </div>
                   </th>
                   <th className="px-4 py-2.5 text-left bg-gray-50">
                     <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <Store className="w-3.5 h-3.5 text-[#2D6EF5]" />
-                      Retailer
+                      Retailer Name
                     </div>
                   </th>
                   <th className="px-4 py-2.5 text-left bg-gray-50">
@@ -284,25 +284,31 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                   <th className="px-4 py-2.5 text-left bg-gray-50">
                     <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <MapPin className="w-3.5 h-3.5 text-[#2D6EF5]" />
-                      Beat
+                      Beat Name
                     </div>
                   </th>
                   <th className="px-4 py-2.5 text-left bg-gray-50">
                     <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <Hash className="w-3.5 h-3.5 text-[#2D6EF5]" />
-                      Ref #
+                      Ref Order Number
                     </div>
                   </th>
                   <th className="px-4 py-2.5 text-right bg-gray-50">
                     <div className="flex items-center justify-end gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <IndianRupee className="w-3.5 h-3.5 text-[#2D6EF5]" />
-                      Invoice
+                      Invoice Value
                     </div>
                   </th>
                   <th className="px-4 py-2.5 text-right bg-gray-50">
                     <div className="flex items-center justify-end gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <Weight className="w-3.5 h-3.5 text-[#2D6EF5]" />
-                      Vol. Wt
+                      Total Weight (Kg)
+                    </div>
+                  </th>
+                  <th className="px-4 py-2.5 text-right bg-gray-50">
+                    <div className="flex items-center justify-end gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <Package className="w-3.5 h-3.5 text-[#2D6EF5]" />
+                      Total Vol. Weight (Kg)
                     </div>
                   </th>
                 </tr>
@@ -341,6 +347,9 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                     </td>
                     <td className="px-4 py-2.5 text-sm text-gray-900 whitespace-nowrap text-right font-medium">
                       ₹ {order.invoiceValue.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-2.5 text-sm text-gray-600 whitespace-nowrap text-right">
+                      {order.totalWeight.toFixed(2)} Kg
                     </td>
                     <td className="px-4 py-2.5 text-sm text-gray-600 whitespace-nowrap text-right">
                       {order.totalVolWeight.toFixed(2)} Kg
