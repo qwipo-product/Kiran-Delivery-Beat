@@ -311,22 +311,33 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                       }
                     </button>
                     {beatFilterOpen && (
-                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-52">
+                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-52" onClick={e => e.stopPropagation()}>
                         <div className="px-3 py-2 border-b border-gray-100 text-xs font-semibold text-gray-700">Filter by Beat Name</div>
                         <div className="max-h-48 overflow-y-auto py-1">
                           {allBeatNames.map(beat => (
-                            <label key={beat} className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
-                              <Checkbox
-                                checked={pendingBeats.includes(beat)}
-                                onCheckedChange={(checked) => {
-                                  setPendingBeats(prev =>
-                                    checked ? [...prev, beat] : prev.filter(b => b !== beat)
-                                  );
-                                }}
-                                className="w-3.5 h-3.5"
-                              />
-                              <span className="text-sm text-gray-700">{beat}</span>
-                            </label>
+                            <div
+                              key={beat}
+                              className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-gray-50 cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPendingBeats(prev =>
+                                  prev.includes(beat) ? prev.filter(b => b !== beat) : [...prev, beat]
+                                );
+                              }}
+                            >
+                              <div className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                                pendingBeats.includes(beat)
+                                  ? 'bg-[#2D6EF5] border-[#2D6EF5]'
+                                  : 'border-gray-300 bg-white'
+                              }`}>
+                                {pendingBeats.includes(beat) && (
+                                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <span className="text-sm text-gray-700 select-none">{beat}</span>
+                            </div>
                           ))}
                         </div>
                         <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 gap-2">
