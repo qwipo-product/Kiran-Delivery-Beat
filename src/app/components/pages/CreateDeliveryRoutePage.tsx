@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Store, User, MapPin, Hash, IndianRupee, Weight, Package, X, List } from 'lucide-react';
+import { ArrowLeft, Calendar, Store, User, MapPin, Hash, IndianRupee, Weight, Package, X, List, ChevronDown, Filter } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import { useState, useMemo } from 'react';
@@ -38,6 +38,10 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
     return new Set<'3pl' | 'self'>(['3pl', 'self']); // 'both'
   });
 
+  const [beatFilterOpen, setBeatFilterOpen] = useState(false);
+  const [pendingBeats, setPendingBeats] = useState<string[]>([]);
+  const [appliedBeats, setAppliedBeats] = useState<string[]>([]);
+
   // Map DataContext orders to local Order format, excluding Offline Orders
   const allOrders: Order[] = useMemo(() => contextOrders
     .filter(o => o.status !== 'Offline Order')
@@ -64,12 +68,19 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
     return Array.from(dates);
   }, [allOrders]);
 
+  // All unique beat names
+  const allBeatNames = useMemo(() =>
+    Array.from(new Set(allOrders.map(o => o.beatName))).sort()
+  , [allOrders]);
+
   const filteredOrders = useMemo(() =>
     allOrders.filter(o => {
       const type = o.deliveryType === '3PL' ? '3pl' : 'self';
-      return selectedDeliveryTypes.has(type);
+      if (!selectedDeliveryTypes.has(type)) return false;
+      if (appliedBeats.length > 0 && !appliedBeats.includes(o.beatName)) return false;
+      return true;
     })
-  , [allOrders, selectedDeliveryTypes]);
+  , [allOrders, selectedDeliveryTypes, appliedBeats]);
 
   const handleOrderDateToggle = (date: string) => {
     setSelectedOrderDates(prev =>
@@ -252,6 +263,11 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
             </label>
           </div>
 
+          {/* Click-outside overlay to close beat filter */}
+          {beatFilterOpen && (
+            <div className="fixed inset-0 z-40" onClick={() => setBeatFilterOpen(false)} />
+          )}
+
           {/* Scrollable Table */}
           <div className="flex-1 overflow-auto min-h-0">
             <table className="min-w-full">
@@ -281,11 +297,54 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                       Sales Person
                     </div>
                   </th>
-                  <th className="px-4 py-2.5 text-left bg-gray-50">
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2.5 text-left bg-gray-50 relative">
+                    <button
+                      onClick={() => { setPendingBeats(appliedBeats); setBeatFilterOpen(v => !v); }}
+                      className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-[#2D6EF5] transition-colors"
+                      style={{ color: appliedBeats.length > 0 ? '#2D6EF5' : undefined }}
+                    >
                       <MapPin className="w-3.5 h-3.5 text-[#2D6EF5]" />
-                      Beat Name
-                    </div>
+                      <span className={appliedBeats.length > 0 ? 'text-[#2D6EF5]' : 'text-gray-500'}>Beat Name</span>
+                      {appliedBeats.length > 0
+                        ? <span className="ml-0.5 bg-[#2D6EF5] text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">{appliedBeats.length}</span>
+                        : <ChevronDown className="w-3 h-3 text-gray-400" />
+                      }
+                    </button>
+                    {beatFilterOpen && (
+                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-52">
+                        <div className="px-3 py-2 border-b border-gray-100 text-xs font-semibold text-gray-700">Filter by Beat Name</div>
+                        <div className="max-h-48 overflow-y-auto py-1">
+                          {allBeatNames.map(beat => (
+                            <label key={beat} className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                              <Checkbox
+                                checked={pendingBeats.includes(beat)}
+                                onCheckedChange={(checked) => {
+                                  setPendingBeats(prev =>
+                                    checked ? [...prev, beat] : prev.filter(b => b !== beat)
+                                  );
+                                }}
+                                className="w-3.5 h-3.5"
+                              />
+                              <span className="text-sm text-gray-700">{beat}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 gap-2">
+                          <button
+                            onClick={() => { setPendingBeats([]); setAppliedBeats([]); setBeatFilterOpen(false); }}
+                            className="text-xs text-gray-500 hover:text-gray-700"
+                          >
+                            Clear
+                          </button>
+                          <button
+                            onClick={() => { setAppliedBeats(pendingBeats); setBeatFilterOpen(false); setSelectedOrderIds([]); setSelectAll(false); }}
+                            className="px-3 py-1 bg-[#2D6EF5] text-white text-xs rounded-md hover:bg-[#2557D6]"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </th>
                   <th className="px-4 py-2.5 text-left bg-gray-50">
                     <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
