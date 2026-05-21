@@ -313,7 +313,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
                       <span className={appliedBeats.length > 0 ? 'text-[#2D6EF5]' : 'text-gray-500'}>Beat Name</span>
                       {appliedBeats.length > 0
                         ? <span className="ml-0.5 bg-[#2D6EF5] text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">{appliedBeats.length}</span>
-                        : <ChevronDown className="w-3 h-3 text-gray-400" />
+                        : <Filter className="w-3 h-3 text-gray-400" />
                       }
                     </button>
                     {beatFilterOpen && (
