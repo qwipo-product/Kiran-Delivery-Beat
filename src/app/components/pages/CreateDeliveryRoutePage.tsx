@@ -187,7 +187,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
           {/* Filter by Order Date */}
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
-              Filter by Order Date
+              Orders Date
             </label>
             <div className="flex items-center gap-2 flex-wrap">
               {orderDates.map((date) => (
@@ -236,9 +236,6 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
             <div className="flex items-center gap-3">
               <span className="text-sm font-semibold text-gray-900">
                 Available Orders
-              </span>
-              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                {filteredOrders.length} orders
               </span>
               {selectedOrderIds.length > 0 && (
                 <span className="text-xs text-[#2D6EF5] bg-blue-50 px-2 py-0.5 rounded-full font-medium">
