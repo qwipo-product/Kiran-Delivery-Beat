@@ -127,7 +127,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
 
   return (
     <>
-      <div className="h-full flex flex-col px-6 py-4 bg-gray-50">
+      <div className="h-full overflow-y-auto px-6 py-4 bg-gray-50">
         {/* Page Header */}
         <div className="mb-3 flex items-center flex-shrink-0">
           <button
@@ -240,8 +240,8 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
           </div>
         </div>
 
-        {/* Orders Table — takes remaining space */}
-        <div className="bg-white rounded-lg border border-gray-200 flex-1 flex flex-col overflow-hidden min-h-0">
+        {/* Orders Table */}
+        <div className="bg-white rounded-lg border border-gray-200 mb-3">
           {/* Table Header Bar */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -268,8 +268,8 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
             <div className="fixed inset-0 z-40" onClick={() => setBeatFilterOpen(false)} />
           )}
 
-          {/* Scrollable Table */}
-          <div className="flex-1 overflow-auto min-h-0">
+          {/* Table */}
+          <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
@@ -420,7 +420,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
           </div>
 
           {/* Summary Footer */}
-          <div className="flex items-center justify-end gap-8 px-4 py-3 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+          <div className="flex items-center justify-end gap-8 px-4 py-3 border-t border-gray-200 bg-gray-50">
             <div className="flex items-center gap-2">
               <List className="w-4 h-4 text-[#2D6EF5]" />
               <span className="text-sm text-gray-600">Selected Orders:</span>
@@ -440,7 +440,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
         </div>
 
         {/* Bottom Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-3 flex-shrink-0">
+        <div className="flex items-center justify-end gap-3 pt-3">
           <Button
             onClick={onBack}
             className="px-5 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-sm"
