@@ -176,7 +176,6 @@ export function OrdersMapView({ open, orders, onClose, onMarkOffline, onRevertOf
                       <div style={{ minWidth: '190px', fontFamily: 'inherit' }}>
                         <div style={{ fontWeight: 600, fontSize: '13px', color: '#111827', marginBottom: '6px', paddingBottom: '6px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           {groupOrders[0].retailerName}
-                          {count > 1 && <span style={{ fontWeight: 400, fontSize: '11px', color: '#6b7280', marginLeft: '2px' }}>+{count - 1} more</span>}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
