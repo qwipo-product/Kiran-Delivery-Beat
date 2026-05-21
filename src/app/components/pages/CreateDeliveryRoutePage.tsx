@@ -361,7 +361,7 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
           </div>
 
           {/* Summary Footer */}
-          <div className="flex items-center gap-8 px-4 py-3 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+          <div className="flex items-center justify-end gap-8 px-4 py-3 border-t border-gray-200 bg-gray-50 flex-shrink-0">
             <div className="flex items-center gap-2">
               <List className="w-4 h-4 text-[#2D6EF5]" />
               <span className="text-sm text-gray-600">Selected Orders:</span>
