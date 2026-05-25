@@ -32,10 +32,9 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [showOptimizedModal, setShowOptimizedModal] = useState(false);
-  const [selectedDeliveryTypes, setSelectedDeliveryTypes] = useState<Set<'3pl' | 'self'>>(() => {
-    if (logisticsSelection === 'self') return new Set<'3pl' | 'self'>(['self']);
-    if (logisticsSelection === '3pl') return new Set<'3pl' | 'self'>(['3pl']);
-    return new Set<'3pl' | 'self'>(['3pl', 'self']); // 'both'
+  const [selectedDeliveryType, setSelectedDeliveryType] = useState<'3pl' | 'self'>(() => {
+    if (logisticsSelection === '3pl') return '3pl';
+    return 'self'; // 'self' or 'both' default to self
   });
 
   const [beatFilterOpen, setBeatFilterOpen] = useState(false);
@@ -87,11 +86,11 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
   const filteredOrders = useMemo(() =>
     allOrders.filter(o => {
       const type = o.deliveryType === '3PL' ? '3pl' : 'self';
-      if (!selectedDeliveryTypes.has(type)) return false;
+      if (type !== selectedDeliveryType) return false;
       if (appliedBeats.length > 0 && !appliedBeats.includes(o.beatName)) return false;
       return true;
     })
-  , [allOrders, selectedDeliveryTypes, appliedBeats]);
+  , [allOrders, selectedDeliveryType, appliedBeats]);
 
   const handleOrderDateToggle = (date: string) => {
     setSelectedOrderDates(prev =>
@@ -179,22 +178,20 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
               <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
                 Delivery Type
               </label>
-              <div className="flex items-center gap-5 h-9">
+              <div className="flex items-center gap-5 h-9" role="radiogroup" aria-label="Delivery Type">
                 {([{ value: 'self', label: 'Self' }, { value: '3pl', label: '3PL' }] as { value: '3pl' | 'self', label: string }[]).map(opt => (
                   <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
-                    <Checkbox
-                      checked={selectedDeliveryTypes.has(opt.value)}
-                      onCheckedChange={(checked) => {
-                        setSelectedDeliveryTypes(prev => {
-                          const next = new Set(prev);
-                          if (checked) next.add(opt.value);
-                          else next.delete(opt.value);
-                          return next;
-                        });
+                    <input
+                      type="radio"
+                      name="deliveryType"
+                      value={opt.value}
+                      checked={selectedDeliveryType === opt.value}
+                      onChange={() => {
+                        setSelectedDeliveryType(opt.value);
                         setSelectedOrderIds([]);
                         setSelectAll(false);
                       }}
-                      className="w-4 h-4"
+                      className="w-4 h-4 accent-[#2D6EF5] cursor-pointer"
                     />
                     <span className="text-sm text-gray-700 font-medium">{opt.label}</span>
                   </label>
