@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Eye, X, Calendar, Hash, Building2, ShoppingCart, User, MapPin, Phone, Activity, Truck, MoreVertical, XCircle, CheckCircle } from 'lucide-react';
+import { Eye, Calendar, Hash, Building2, ShoppingCart, User, MapPin, Phone, Activity, Truck } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Pagination } from './Pagination';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 export interface Order {
   id: string;
@@ -198,37 +197,14 @@ export function OrdersTable({ orders, onDeleteOrder, selectedOrderId, onSelectOr
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-                        <MoreVertical className="w-4 h-4 text-gray-500" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44">
-                      <DropdownMenuItem onClick={() => onViewOrder?.(order.id)} className="gap-2 cursor-pointer">
-                        <Eye className="w-4 h-4 text-[#2D6EF5]" />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => order.status === 'Ready for Planning' && onMarkDeliveredDirect?.(order.id)}
-                        disabled={order.status !== 'Ready for Planning'}
-                        className="gap-2 cursor-pointer text-green-600 focus:text-green-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:text-green-600"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        Delivered
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onCancelOrder?.(order.id)} className="gap-2 cursor-pointer text-red-600 focus:text-red-600">
-                        <XCircle className="w-4 h-4" />
-                        Cancel
-                      </DropdownMenuItem>
-                      {(!order.deliveryType || order.deliveryType === 'Self') && (
-                        <DropdownMenuItem onClick={() => onMake3PL?.(order.id)} className="gap-2 cursor-pointer text-[#2D6EF5] focus:text-[#2D6EF5]">
-                          <Truck className="w-4 h-4" />
-                          Make 3PL
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <button
+                    onClick={() => onViewOrder?.(order.id)}
+                    aria-label="View order details"
+                    title="View Details"
+                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <Eye className="w-4 h-4 text-[#2D6EF5]" />
+                  </button>
                 </td>
               </tr>
             ))}
