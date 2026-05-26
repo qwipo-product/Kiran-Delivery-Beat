@@ -175,7 +175,7 @@ export default function App() {
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-hidden h-full">
+          <main className="flex-1 flex flex-col overflow-hidden min-h-0">
             {renderPage()}
           </main>
         </div>
