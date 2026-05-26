@@ -32,6 +32,7 @@ const statusOptions = [
   'Trip Assigned',
   'In Transit',
   'Delivered',
+  'Offline Delivery',
   'Partial Return',
   'Returned',
   'Cancelled',
