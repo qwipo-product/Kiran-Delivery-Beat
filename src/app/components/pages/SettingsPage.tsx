@@ -434,9 +434,9 @@ function DeliveryTab() {
         <p className="text-xs text-gray-500 mb-5">Choose the default logistics mode used across the platform.</p>
         <div className="flex items-center gap-8">
           {[
-            { value: 'both', label: 'Both (Self + 3PL)', description: 'Default' },
             { value: 'self', label: 'Self', description: 'Self logistics only' },
             { value: '3pl', label: '3PL', description: '3PL logistics only' },
+            { value: 'both', label: 'Self + 3PL', description: 'Default' },
           ].map(option => (
             <label
               key={option.value}

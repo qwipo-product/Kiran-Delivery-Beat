@@ -173,31 +173,33 @@ export function CreateDeliveryRoutePage({ onBack, onConfirm, onTripsCreated, act
               </div>
             </div>
 
-            {/* Delivery Type radio buttons */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
-                Delivery Type
-              </label>
-              <div className="flex items-center gap-5 h-9" role="radiogroup" aria-label="Delivery Type">
-                {([{ value: 'self', label: 'Self' }, { value: '3pl', label: '3PL' }] as { value: '3pl' | 'self', label: string }[]).map(opt => (
-                  <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="deliveryType"
-                      value={opt.value}
-                      checked={selectedDeliveryType === opt.value}
-                      onChange={() => {
-                        setSelectedDeliveryType(opt.value);
-                        setSelectedOrderIds([]);
-                        setSelectAll(false);
-                      }}
-                      className="w-4 h-4 accent-[#2D6EF5] cursor-pointer"
-                    />
-                    <span className="text-sm text-gray-700 font-medium">{opt.label}</span>
-                  </label>
-                ))}
+            {/* Delivery Type radio buttons — only shown when both delivery modes are enabled */}
+            {logisticsSelection === 'both' && (
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+                  Delivery Type
+                </label>
+                <div className="flex items-center gap-5 h-9" role="radiogroup" aria-label="Delivery Type">
+                  {([{ value: 'self', label: 'Self' }, { value: '3pl', label: '3PL' }] as { value: '3pl' | 'self', label: string }[]).map(opt => (
+                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="deliveryType"
+                        value={opt.value}
+                        checked={selectedDeliveryType === opt.value}
+                        onChange={() => {
+                          setSelectedDeliveryType(opt.value);
+                          setSelectedOrderIds([]);
+                          setSelectAll(false);
+                        }}
+                        className="w-4 h-4 accent-[#2D6EF5] cursor-pointer"
+                      />
+                      <span className="text-sm text-gray-700 font-medium">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Divider */}
