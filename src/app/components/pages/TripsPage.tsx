@@ -136,10 +136,10 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   const [filterPickupDate, setFilterPickupDate] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
-  const [filterProvider, setFilterProvider] = useState('All');
+  const [filterProvider, setFilterProvider] = useState<string[]>([]);
   const [appliedPickupDate, setAppliedPickupDate] = useState('');
   const [appliedStatus, setAppliedStatus] = useState('All');
-  const [appliedProvider, setAppliedProvider] = useState('All');
+  const [appliedProvider, setAppliedProvider] = useState<string[]>([]);
 
   // Unique provider names from all trips
   const providerNames = React.useMemo(() => {
@@ -155,8 +155,8 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
     // Status filter
     if (appliedStatus !== 'All' && trip.status !== appliedStatus) return false;
 
-    // Provider filter
-    if (appliedProvider !== 'All' && trip.provider !== appliedProvider) return false;
+    // Provider filter (multi-select: empty array means show all)
+    if (appliedProvider.length > 0 && !appliedProvider.includes(trip.provider)) return false;
 
     // Pickup date filter
     if (appliedPickupDate) {
@@ -713,15 +713,15 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
         onClose={() => setIsFilterDialogOpen(false)}
         pickupDate={filterPickupDate}
         status={filterStatus}
-        providerName={filterProvider}
+        selectedProviders={filterProvider}
         providerNames={providerNames}
         onPickupDateChange={setFilterPickupDate}
         onStatusChange={setFilterStatus}
-        onProviderNameChange={setFilterProvider}
+        onSelectedProvidersChange={setFilterProvider}
         onClearAll={() => {
           setFilterPickupDate('');
           setFilterStatus('All');
-          setFilterProvider('All');
+          setFilterProvider([]);
         }}
         onApplyFilters={() => {
           setAppliedPickupDate(filterPickupDate);
