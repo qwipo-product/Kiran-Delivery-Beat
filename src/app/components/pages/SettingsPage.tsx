@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, User, Truck, List, CreditCard, Users, Clock, CalendarX, Plus, Trash2, RotateCcw, Save, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Settings as SettingsIcon, User, Truck, List, CreditCard, Users, Clock, CalendarX, Plus, Trash2, RotateCcw, Save, Pencil, ChevronLeft, ChevronRight, Settings2, CircleCheck, Store } from 'lucide-react';
 import { Input } from '../ui/input';
 import { toast } from 'sonner';
 import { useData } from '../../context/DataContext';
@@ -257,6 +257,12 @@ function DeliveryTab() {
   });
   const [ondcCategory, setOndcCategory] = useState('Grocery');
   const [exclusions, setExclusions] = useState(exclusionsData);
+  const [routeEngine, setRouteEngine] = useState<'route' | 'beat' | 'vehicleBeat'>('route');
+  const [otpConfig, setOtpConfig] = useState({ seller: true, retailer: true });
+  const [savedOtpConfig, setSavedOtpConfig] = useState({ seller: true, retailer: true });
+
+  const otpDirty =
+    otpConfig.seller !== savedOtpConfig.seller || otpConfig.retailer !== savedOtpConfig.retailer;
 
   const handleDeleteExclusion = (id: number) => {
     setExclusions(prev => prev.filter(e => e.id !== id));
@@ -264,6 +270,11 @@ function DeliveryTab() {
 
   const handleResetDefaults = () => {
     setRouteConfig({ serviceTime: '12', maxTravelTime: '8.5', maxStops: '30', maxDistance: '50' });
+  };
+
+  const handleSaveOtp = () => {
+    setSavedOtpConfig(otpConfig);
+    toast.success('Proof of Delivery settings saved.');
   };
 
   return (
@@ -381,6 +392,153 @@ function DeliveryTab() {
               <span className="text-sm text-gray-500">km</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Route Engine */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-start gap-3 mb-5">
+          <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+            <Settings2 className="w-4 h-4 text-indigo-500" />
+          </div>
+          <div>
+            <p className="text-base font-semibold text-gray-900">Route Engine</p>
+            <p className="text-xs text-gray-500 mt-0.5">Algorithm used for route planning</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {[
+            {
+              value: 'route' as const,
+              label: 'Route Optimizer',
+              badge: 'Default',
+              lines: [
+                'Distributes orders across trips to optimise for route efficiency and vehicle load balancing. Beats may be split across multiple trips.',
+              ],
+            },
+            {
+              value: 'beat' as const,
+              label: 'Beat Optimizer',
+              badge: null,
+              lines: [
+                'Keeps all orders belonging to the same beat in a single trip. Beats are never split across multiple trips. Routing and load optimisation remain unchanged.',
+              ],
+            },
+            {
+              value: 'vehicleBeat' as const,
+              label: 'Vehicle Beat Optimizer',
+              badge: 'New',
+              lines: [
+                'Loads each vehicle only from the beats tagged to it in the LSP (Resources › Vehicles).',
+                'Beats are never split and always travel with their assigned vehicle.',
+                'Routing and load optimisation within the vehicle remain unchanged.',
+              ],
+            },
+          ].map(option => {
+            const isSelected = routeEngine === option.value;
+            return (
+              <label
+                key={option.value}
+                className={`block border rounded-lg p-4 cursor-pointer transition-colors group ${
+                  isSelected
+                    ? 'border-[#2D6EF5] bg-indigo-50/40'
+                    : 'border-gray-200 bg-white hover:border-[#2D6EF5]'
+                }`}
+                onClick={() => setRouteEngine(option.value)}
+              >
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center mb-2 ${
+                  isSelected
+                    ? 'border-[#2D6EF5] bg-white'
+                    : 'border-gray-300 bg-white group-hover:border-[#2D6EF5]'
+                }`}>
+                  {isSelected && <div className="w-2 h-2 rounded-full bg-[#2D6EF5]" />}
+                </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className={`text-sm font-semibold ${isSelected ? 'text-[#2D6EF5]' : 'text-gray-900'}`}>
+                    {option.label}
+                  </p>
+                  {option.badge && (
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      option.badge === 'New'
+                        ? 'bg-indigo-100 text-indigo-700'
+                        : 'bg-green-100 text-green-700'
+                    }`}>
+                      {option.badge}
+                    </span>
+                  )}
+                </div>
+                {option.lines.map(line => (
+                  <p key={line} className="text-xs text-gray-600">{line}</p>
+                ))}
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Proof of Delivery (OTP) */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+              <CircleCheck className="w-4 h-4 text-indigo-500" />
+            </div>
+            <h2 className="text-base font-semibold text-gray-900">Proof of Delivery (OTP)</h2>
+          </div>
+          <button
+            onClick={handleSaveOtp}
+            disabled={!otpDirty}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm bg-gray-800 text-white hover:bg-gray-900 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
+          >
+            <Save className="w-3.5 h-3.5" />
+            Save
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { key: 'seller' as const, label: 'Seller OTP', caption: '(Pickup & Return)', icon: Store },
+            { key: 'retailer' as const, label: 'Retailer OTP', caption: '(Delivery)', icon: Truck },
+          ].map(item => {
+            const Icon = item.icon;
+            const isEnabled = otpConfig[item.key];
+            return (
+              <div key={item.key} className="flex items-center justify-between border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-indigo-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{item.label}</p>
+                    <p className="text-xs text-gray-500">{item.caption}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`flex items-center gap-1.5 text-sm font-medium ${
+                    isEnabled ? 'text-green-600' : 'text-gray-400'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isEnabled ? 'bg-green-500' : 'bg-gray-400'}`} />
+                    {isEnabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isEnabled}
+                    aria-label={`${item.label} ${item.caption}`}
+                    onClick={() => setOtpConfig(p => ({ ...p, [item.key]: !p[item.key] }))}
+                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                      isEnabled ? 'bg-[#2D6EF5]' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                      isEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

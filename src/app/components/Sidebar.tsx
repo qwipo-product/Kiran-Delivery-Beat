@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Package, Truck, MapPin, FileText, Settings, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Package, Truck, MapPin, FileText, Settings, Users, Layers } from 'lucide-react';
 
 interface SidebarProps {
   activeItem: string;
@@ -14,6 +14,7 @@ export function Sidebar({ activeItem, onItemClick, isCollapsed, onToggleCollapse
     { id: 'trips', label: 'Trips', icon: MapPin },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'customers', label: 'Customers', icon: Users },
+    { id: 'beats', label: 'Beats & Clusters', icon: Layers },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 

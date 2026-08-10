@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(unzip -o \"C:\\\\Users\\\\Admin\\\\Downloads\\\\LBNP Full Flow.zip\" -d \"C:\\\\LBNP\")",
-      "Bash(npm install:*)",
-      "mcp__Claude_Preview__preview_start"
-    ]
-  }
-}

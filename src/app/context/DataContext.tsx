@@ -54,6 +54,35 @@ export interface Trip {
   deliveredRoute?: { lat: number; lng: number }[];
 }
 
+export interface Beat {
+  id: string;
+  name: string;
+  code: string;
+  area: string;
+  status: 'Active' | 'Inactive';
+  source: 'System' | 'Manual' | 'Excel';
+  createdDate: string;
+}
+
+export interface Vehicle {
+  id: string;
+  vehicleNumber: string;
+  type: string;
+  capacityKg: number;
+  driverName: string;
+  status: 'Available' | 'On Trip' | 'Inactive';
+}
+
+export interface Cluster {
+  id: string;
+  name: string;
+  code: string;
+  beatIds: string[];
+  vehicleId: string;
+  status: 'Active' | 'Inactive';
+  createdDate: string;
+}
+
 export interface DeliveryRoute {
   id: string;
   createdDate: string;
@@ -87,6 +116,16 @@ interface DataContextType {
   reassignOrders: (orderIds: string[], newTripNumber: string) => void;
   createDeliveryRoute: (route: DeliveryRoute) => void;
   deleteDeliveryRoute: (id: string) => void;
+  beats: Beat[];
+  vehicles: Vehicle[];
+  clusters: Cluster[];
+  addBeat: (beat: Omit<Beat, 'id' | 'createdDate'>) => void;
+  addBeats: (beats: Omit<Beat, 'id' | 'createdDate'>[]) => void;
+  updateBeat: (id: string, beat: Partial<Beat>) => void;
+  deleteBeat: (id: string) => void;
+  addCluster: (cluster: Omit<Cluster, 'id' | 'createdDate'>) => void;
+  updateCluster: (id: string, cluster: Partial<Cluster>) => void;
+  deleteCluster: (id: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -1311,12 +1350,106 @@ const initialDeliveryRoutes: DeliveryRoute[] = [
   },
 ];
 
+// dd/mm/yy — the date format used across the app's tables
+function todayLabel() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${String(d.getFullYear()).slice(-2)}`;
+}
+
+let idCounter = 0;
+const nextId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${idCounter++}`;
+
+// Beats currently referenced by orders in this LBNP
+const initialBeats: Beat[] = [
+  { id: 'B1', name: 'Kphb', code: 'BT-001', area: 'Kukatpally', status: 'Active', source: 'System', createdDate: '01/03/26' },
+  { id: 'B2', name: 'Beat 1', code: 'BT-002', area: 'Madhapur', status: 'Active', source: 'System', createdDate: '01/03/26' },
+  { id: 'B3', name: 'Beat 2', code: 'BT-003', area: 'Gachibowli', status: 'Active', source: 'System', createdDate: '01/03/26' },
+  { id: 'B4', name: 'Beat 3', code: 'BT-004', area: 'Kondapur', status: 'Active', source: 'System', createdDate: '01/03/26' },
+  { id: 'B5', name: 'Beat 4', code: 'BT-005', area: 'Miyapur', status: 'Active', source: 'System', createdDate: '02/03/26' },
+  { id: 'B6', name: 'Beat 5', code: 'BT-006', area: 'Ameerpet', status: 'Active', source: 'System', createdDate: '02/03/26' },
+  { id: 'B7', name: 'Beat 6', code: 'BT-007', area: 'Begumpet', status: 'Active', source: 'System', createdDate: '02/03/26' },
+  { id: 'B8', name: 'Beat 7', code: 'BT-008', area: 'Secunderabad', status: 'Active', source: 'System', createdDate: '03/03/26' },
+  { id: 'B9', name: 'Beat 8', code: 'BT-009', area: 'LB Nagar', status: 'Active', source: 'System', createdDate: '03/03/26' },
+  { id: 'B10', name: 'Beat 9', code: 'BT-010', area: 'Uppal', status: 'Active', source: 'System', createdDate: '03/03/26' },
+];
+
+// Vehicles available to this LBNP (synced from the LSP: Resources > Vehicles)
+const initialVehicles: Vehicle[] = [
+  { id: 'V1', vehicleNumber: 'TS09AB1234', type: 'Tata Ace', capacityKg: 750, driverName: 'Ramesh Kumar', status: 'On Trip' },
+  { id: 'V2', vehicleNumber: 'TS09CD5678', type: 'Mahindra Bolero Pickup', capacityKg: 1250, driverName: 'Suresh Reddy', status: 'On Trip' },
+  { id: 'V3', vehicleNumber: 'TS09EF9012', type: 'Tata 407', capacityKg: 2500, driverName: 'Mahesh Babu', status: 'Available' },
+  { id: 'V4', vehicleNumber: 'TS10GH3456', type: 'Ashok Leyland Dost', capacityKg: 1500, driverName: 'Venkat Rao', status: 'Available' },
+  { id: 'V5', vehicleNumber: 'TS10IJ7890', type: 'Tata Ace', capacityKg: 750, driverName: 'Kiran Kumar', status: 'Available' },
+  { id: 'V6', vehicleNumber: 'TS11KL2345', type: 'Eicher Pro 1049', capacityKg: 4000, driverName: 'Naveen Chandra', status: 'Available' },
+  { id: 'V7', vehicleNumber: 'TS11MN6789', type: 'Mahindra Jeeto', capacityKg: 600, driverName: 'Prakash Rao', status: 'Inactive' },
+];
+
+const initialClusters: Cluster[] = [
+  {
+    id: 'CL1',
+    name: 'West Hyderabad Cluster',
+    code: 'CLU-001',
+    beatIds: ['B1', 'B2', 'B5'],
+    vehicleId: 'V3',
+    status: 'Active',
+    createdDate: '05/03/26',
+  },
+  {
+    id: 'CL2',
+    name: 'Central Cluster',
+    code: 'CLU-002',
+    beatIds: ['B6', 'B7'],
+    vehicleId: 'V4',
+    status: 'Active',
+    createdDate: '06/03/26',
+  },
+];
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [trips, setTrips] = useState<Trip[]>(initialTrips);
   const [deliveryRoutes, setDeliveryRoutes] = useState<DeliveryRoute[]>(initialDeliveryRoutes);
   const [logisticsSelection, setLogisticsSelection] = useState<'both' | 'self' | '3pl'>('both');
+  const [beats, setBeats] = useState<Beat[]>(initialBeats);
+  const [vehicles] = useState<Vehicle[]>(initialVehicles);
+  const [clusters, setClusters] = useState<Cluster[]>(initialClusters);
+
+  // Beat Actions
+  const addBeat = (beat: Omit<Beat, 'id' | 'createdDate'>) => {
+    setBeats(prev => [...prev, { ...beat, id: nextId('B'), createdDate: todayLabel() }]);
+  };
+
+  const addBeats = (newBeats: Omit<Beat, 'id' | 'createdDate'>[]) => {
+    setBeats(prev => [
+      ...prev,
+      ...newBeats.map(b => ({ ...b, id: nextId('B'), createdDate: todayLabel() })),
+    ]);
+  };
+
+  const updateBeat = (id: string, beatUpdate: Partial<Beat>) => {
+    setBeats(prev => prev.map(b => (b.id === id ? { ...b, ...beatUpdate } : b)));
+  };
+
+  const deleteBeat = (id: string) => {
+    setBeats(prev => prev.filter(b => b.id !== id));
+    // Drop the beat from any cluster that referenced it
+    setClusters(prev => prev.map(c => ({ ...c, beatIds: c.beatIds.filter(bId => bId !== id) })));
+  };
+
+  // Cluster Actions
+  const addCluster = (cluster: Omit<Cluster, 'id' | 'createdDate'>) => {
+    setClusters(prev => [...prev, { ...cluster, id: nextId('CL'), createdDate: todayLabel() }]);
+  };
+
+  const updateCluster = (id: string, clusterUpdate: Partial<Cluster>) => {
+    setClusters(prev => prev.map(c => (c.id === id ? { ...c, ...clusterUpdate } : c)));
+  };
+
+  const deleteCluster = (id: string) => {
+    setClusters(prev => prev.filter(c => c.id !== id));
+  };
 
   // Customer Actions
   const addCustomer = (customer: Customer) => {
@@ -1455,6 +1588,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
         reassignOrders,
         createDeliveryRoute,
         deleteDeliveryRoute,
+        beats,
+        vehicles,
+        clusters,
+        addBeat,
+        addBeats,
+        updateBeat,
+        deleteBeat,
+        addCluster,
+        updateCluster,
+        deleteCluster,
       }}
     >
       {children}

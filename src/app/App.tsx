@@ -10,6 +10,9 @@ import type { Trip } from './components/pages/TripsPage';
 import { ReportsPage } from './components/pages/ReportsPage';
 import { CustomersPage } from './components/pages/CustomersPage';
 import { SettingsPage } from './components/pages/SettingsPage';
+import { BeatsClustersPage } from './components/pages/BeatsClustersPage';
+import { AddClusterPage } from './components/pages/AddClusterPage';
+import type { Cluster } from './context/DataContext';
 import { QuickOrderPage } from './components/pages/QuickOrderPage';
 import { SelfLogisticsDialog } from './components/SelfLogisticsDialog';
 import { CreateDeliveryRoutePage } from './components/pages/CreateDeliveryRoutePage';
@@ -31,6 +34,8 @@ export default function App() {
   const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<Order | MergedOrder | null>(null);
   const [allOrders, setAllOrders] = useState<(Order | MergedOrder)[]>([]);
   const [confirmedTrips, setConfirmedTrips] = useState<Trip[]>([]);
+  const [showAddCluster, setShowAddCluster] = useState(false);
+  const [clusterToEdit, setClusterToEdit] = useState<Cluster | null>(null);
 
   const renderPage = () => {
     if (selectedOrderForDetails) {
@@ -58,6 +63,18 @@ export default function App() {
           onSave={(newOrder) => {
             setShowQuickOrder(false);
             setSelectedOrderForDetails(newOrder);
+          }}
+        />
+      );
+    }
+
+    if (showAddCluster) {
+      return (
+        <AddClusterPage
+          cluster={clusterToEdit}
+          onBack={() => {
+            setShowAddCluster(false);
+            setClusterToEdit(null);
           }}
         />
       );
@@ -107,6 +124,15 @@ export default function App() {
         return <ReportsPage />;
       case 'customers':
         return <CustomersPage />;
+      case 'beats':
+        return (
+          <BeatsClustersPage
+            onNavigateToAddCluster={(cluster) => {
+              setClusterToEdit(cluster ?? null);
+              setShowAddCluster(true);
+            }}
+          />
+        );
       case 'settings':
         return <SettingsPage />;
       default:
