@@ -50,6 +50,11 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
   });
 
   const filteredVehicles = vehicles.filter(v => {
+    /* Vehicles out on a trip are not offered for clustering. The one already
+       tagged to this cluster stays visible even if it is mid-trip, so an edit
+       never silently drops the current selection. */
+    if (v.status === 'On Trip' && v.id !== selectedVehicleId) return false;
+
     const q = vehicleSearch.toLowerCase();
     return (
       v.vehicleNumber.toLowerCase().includes(q) ||

@@ -11,11 +11,13 @@ import type { Beat, Cluster } from '../../context/DataContext';
 
 interface BeatsClustersPageProps {
   onNavigateToAddCluster: (cluster?: Cluster) => void;
+  /** Tab to open on mount, so returning from the cluster builder lands back on Clusters. */
+  initialTab?: 'beats' | 'clusters';
 }
 
-export function BeatsClustersPage({ onNavigateToAddCluster }: BeatsClustersPageProps) {
+export function BeatsClustersPage({ onNavigateToAddCluster, initialTab }: BeatsClustersPageProps) {
   const { beats, clusters, vehicles, deleteBeat, deleteCluster } = useData();
-  const [activeTab, setActiveTab] = useState<'beats' | 'clusters'>('beats');
+  const [activeTab, setActiveTab] = useState<'beats' | 'clusters'>(initialTab ?? 'beats');
   const [beatSearch, setBeatSearch] = useState('');
   const [clusterSearch, setClusterSearch] = useState('');
   const [showBeatDialog, setShowBeatDialog] = useState(false);
@@ -315,6 +317,13 @@ export function BeatsClustersPage({ onNavigateToAddCluster }: BeatsClustersPageP
                           </p>
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            onClick={() => onNavigateToAddCluster(cluster)}
+                            className="p-1.5 text-gray-400 hover:text-[#2D6EF5] transition-colors"
+                            title="Edit cluster"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => handleDeleteCluster(cluster)}
                             className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"

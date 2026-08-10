@@ -36,6 +36,7 @@ export default function App() {
   const [confirmedTrips, setConfirmedTrips] = useState<Trip[]>([]);
   const [showAddCluster, setShowAddCluster] = useState(false);
   const [clusterToEdit, setClusterToEdit] = useState<Cluster | null>(null);
+  const [beatsInitialTab, setBeatsInitialTab] = useState<'beats' | 'clusters'>('beats');
 
   const renderPage = () => {
     if (selectedOrderForDetails) {
@@ -127,8 +128,10 @@ export default function App() {
       case 'beats':
         return (
           <BeatsClustersPage
+            initialTab={beatsInitialTab}
             onNavigateToAddCluster={(cluster) => {
               setClusterToEdit(cluster ?? null);
+              setBeatsInitialTab('clusters');
               setShowAddCluster(true);
             }}
           />
@@ -175,6 +178,8 @@ export default function App() {
             onItemClick={(item) => {
               setActiveMenuItem(item);
               setSidebarOpen(false);
+              // Entering Beats & Clusters from the nav always starts on Beats
+              setBeatsInitialTab('beats');
             }}
             isCollapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
