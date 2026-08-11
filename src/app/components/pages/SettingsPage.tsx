@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, User, Truck, List, CreditCard, Users, Clock, CalendarX, Plus, Trash2, RotateCcw, Save, Pencil, ChevronLeft, ChevronRight, Settings2, CircleCheck, Store } from 'lucide-react';
+import { Settings as SettingsIcon, User, Truck, List, CreditCard, Users, Clock, CalendarX, Plus, Trash2, RotateCcw, Save, Pencil, ChevronLeft, ChevronRight, Settings2, CircleCheck, Store, MapPin, Layers } from 'lucide-react';
 import { Input } from '../ui/input';
 import { toast } from 'sonner';
 import { useData } from '../../context/DataContext';
+import type { Cluster } from '../../context/DataContext';
+import { BeatsPanel, ClustersPanel } from './BeatsClusterPanels';
 
 const warehouseAddresses = [
   {
@@ -31,13 +33,21 @@ const warehouseAddresses = [
   },
 ];
 
-export function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('profile');
+interface SettingsPageProps {
+  onNavigateToAddCluster: (cluster?: Cluster) => void;
+  /** Tab to open on mount, so returning from the cluster builder lands back on Clusters. */
+  initialTab?: string;
+}
+
+export function SettingsPage({ onNavigateToAddCluster, initialTab }: SettingsPageProps) {
+  const [activeTab, setActiveTab] = useState(initialTab ?? 'profile');
   const [addresses, setAddresses] = useState(warehouseAddresses);
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'delivery', label: 'Delivery', icon: Truck },
+    { id: 'beats', label: 'Beats', icon: MapPin },
+    { id: 'clusters', label: 'Clusters', icon: Layers },
     { id: 'category', label: 'Category Sequence', icon: List },
     { id: 'payment', label: 'Payment', icon: CreditCard },
     { id: 'users', label: 'Users & Permissions', icon: Users },
@@ -222,8 +232,16 @@ export function SettingsPage() {
           {/* Delivery Tab */}
           {activeTab === 'delivery' && <DeliveryTab />}
 
+          {/* Beats Tab */}
+          {activeTab === 'beats' && <BeatsPanel />}
+
+          {/* Clusters Tab */}
+          {activeTab === 'clusters' && (
+            <ClustersPanel onNavigateToAddCluster={onNavigateToAddCluster} />
+          )}
+
           {/* Other tabs placeholder */}
-          {activeTab !== 'profile' && activeTab !== 'delivery' && (
+          {!['profile', 'delivery', 'beats', 'clusters'].includes(activeTab) && (
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-2">
                 {tabs.find(t => t.id === activeTab)?.label}

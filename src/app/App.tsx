@@ -10,7 +10,6 @@ import type { Trip } from './components/pages/TripsPage';
 import { ReportsPage } from './components/pages/ReportsPage';
 import { CustomersPage } from './components/pages/CustomersPage';
 import { SettingsPage } from './components/pages/SettingsPage';
-import { BeatsClustersPage } from './components/pages/BeatsClustersPage';
 import { AddClusterPage } from './components/pages/AddClusterPage';
 import type { Cluster } from './context/DataContext';
 import { QuickOrderPage } from './components/pages/QuickOrderPage';
@@ -36,7 +35,7 @@ export default function App() {
   const [confirmedTrips, setConfirmedTrips] = useState<Trip[]>([]);
   const [showAddCluster, setShowAddCluster] = useState(false);
   const [clusterToEdit, setClusterToEdit] = useState<Cluster | null>(null);
-  const [beatsInitialTab, setBeatsInitialTab] = useState<'beats' | 'clusters'>('beats');
+  const [settingsInitialTab, setSettingsInitialTab] = useState('profile');
 
   const renderPage = () => {
     if (selectedOrderForDetails) {
@@ -125,19 +124,17 @@ export default function App() {
         return <ReportsPage />;
       case 'customers':
         return <CustomersPage />;
-      case 'beats':
+      case 'settings':
         return (
-          <BeatsClustersPage
-            initialTab={beatsInitialTab}
+          <SettingsPage
+            initialTab={settingsInitialTab}
             onNavigateToAddCluster={(cluster) => {
               setClusterToEdit(cluster ?? null);
-              setBeatsInitialTab('clusters');
+              setSettingsInitialTab('clusters');
               setShowAddCluster(true);
             }}
           />
         );
-      case 'settings':
-        return <SettingsPage />;
       default:
         return (
           <OrdersPage
@@ -178,8 +175,8 @@ export default function App() {
             onItemClick={(item) => {
               setActiveMenuItem(item);
               setSidebarOpen(false);
-              // Entering Beats & Clusters from the nav always starts on Beats
-              setBeatsInitialTab('beats');
+              // Entering Settings from the nav always starts on Profile
+              setSettingsInitialTab('profile');
             }}
             isCollapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
