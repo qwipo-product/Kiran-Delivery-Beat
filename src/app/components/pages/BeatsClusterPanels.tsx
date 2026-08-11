@@ -176,8 +176,19 @@ export function BeatsPanel() {
         </div>
       </div>
 
-      {showBeatDialog && <BeatDialog beat={beatToEdit} onClose={closeBeatDialog} />}
-      {showUploadBeats && <UploadBeatsDialog onClose={() => setShowUploadBeats(false)} />}
+      {showBeatDialog && (
+        <BeatDialog
+          beat={beatToEdit}
+          onClose={closeBeatDialog}
+          onCreated={() => setCurrentPage(1)}
+        />
+      )}
+      {showUploadBeats && (
+        <UploadBeatsDialog
+          onClose={() => setShowUploadBeats(false)}
+          onImported={() => setCurrentPage(1)}
+        />
+      )}
     </div>
   );
 }

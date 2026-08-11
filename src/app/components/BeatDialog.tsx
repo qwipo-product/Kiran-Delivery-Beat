@@ -9,9 +9,11 @@ interface BeatDialogProps {
   onClose: () => void;
   /** Passed when editing an existing beat; omitted when adding a new one. */
   beat?: Beat | null;
+  /** Fired only when a new beat is created, so the list can jump to it. */
+  onCreated?: () => void;
 }
 
-export function BeatDialog({ onClose, beat }: BeatDialogProps) {
+export function BeatDialog({ onClose, beat, onCreated }: BeatDialogProps) {
   const { beats, addBeat, updateBeat } = useData();
   const isEdit = Boolean(beat);
 
@@ -51,6 +53,7 @@ export function BeatDialog({ onClose, beat }: BeatDialogProps) {
         source: 'Manual',
       });
       toast.success(`Beat "${trimmed}" added.`);
+      onCreated?.();
     }
     onClose();
   };

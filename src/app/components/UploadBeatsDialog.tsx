@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 
 interface UploadBeatsDialogProps {
   onClose: () => void;
+  /** Fired after a successful import, so the list can jump to the new beats. */
+  onImported?: () => void;
 }
 
 type RowStatus = 'Ready' | 'Duplicate' | 'Invalid';
@@ -29,7 +31,7 @@ function pick(record: Record<string, unknown>, ...candidates: string[]) {
   return '';
 }
 
-export function UploadBeatsDialog({ onClose }: UploadBeatsDialogProps) {
+export function UploadBeatsDialog({ onClose, onImported }: UploadBeatsDialogProps) {
   const { beats, addBeats } = useData();
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState('');
@@ -120,6 +122,7 @@ export function UploadBeatsDialog({ onClose }: UploadBeatsDialogProps) {
       }))
     );
     toast.success(`${readyRows.length} beat${readyRows.length === 1 ? '' : 's'} imported.`);
+    onImported?.();
     onClose();
   };
 

@@ -1417,14 +1417,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [clusters, setClusters] = useState<Cluster[]>(initialClusters);
 
   // Beat Actions
+  // Newly added beats go to the top of the list so they are visible straight away.
   const addBeat = (beat: Omit<Beat, 'id' | 'createdDate'>) => {
-    setBeats(prev => [...prev, { ...beat, id: nextId('B'), createdDate: todayLabel() }]);
+    setBeats(prev => [{ ...beat, id: nextId('B'), createdDate: todayLabel() }, ...prev]);
   };
 
   const addBeats = (newBeats: Omit<Beat, 'id' | 'createdDate'>[]) => {
     setBeats(prev => [
-      ...prev,
+      // Keep the file's own order within the imported block
       ...newBeats.map(b => ({ ...b, id: nextId('B'), createdDate: todayLabel() })),
+      ...prev,
     ]);
   };
 
