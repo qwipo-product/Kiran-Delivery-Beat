@@ -275,7 +275,7 @@ function DeliveryTab() {
   });
   const [ondcCategory, setOndcCategory] = useState('Grocery');
   const [exclusions, setExclusions] = useState(exclusionsData);
-  const [routeEngine, setRouteEngine] = useState<'route' | 'beat' | 'vehicleBeat'>('route');
+  const [routeEngine, setRouteEngine] = useState<'route' | 'beat' | 'clusterBeat'>('route');
   const [otpConfig, setOtpConfig] = useState({ seller: true, retailer: true });
   const [savedOtpConfig, setSavedOtpConfig] = useState({ seller: true, retailer: true });
 
@@ -444,13 +444,11 @@ function DeliveryTab() {
               ],
             },
             {
-              value: 'vehicleBeat' as const,
-              label: 'Vehicle Beat Optimizer',
-              badge: 'New',
+              value: 'clusterBeat' as const,
+              label: 'Cluster Beat Optimizer',
+              badge: null,
               lines: [
-                'Loads each vehicle only from the beats tagged to it in the LSP (Resources › Vehicles).',
-                'Beats are never split and always travel with their assigned vehicle.',
-                'Routing and load optimisation within the vehicle remain unchanged.',
+                'All orders belonging to a tagged beat must be generated into the same assigned vehicle and must never be split across multiple vehicles.',
               ],
             },
           ].map(option => {

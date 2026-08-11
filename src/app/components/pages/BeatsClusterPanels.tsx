@@ -224,7 +224,7 @@ export function ClustersPanel({ onNavigateToAddCluster }: ClustersPanelProps) {
           </button>
         </div>
         <p className="text-xs text-gray-500 mb-5">
-          Group beats onto a single vehicle. The Vehicle Beat Optimizer loads each vehicle only
+          Group beats onto a single vehicle. The Cluster Beat Optimizer loads each vehicle only
           from the beats in its cluster.
         </p>
 

@@ -134,7 +134,7 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
           </h1>
         </div>
         <p className="text-sm text-gray-600">
-          Group beats together and tag a vehicle to them. The Vehicle Beat Optimizer loads this
+          Group beats together and tag a vehicle to them. The Cluster Beat Optimizer loads this
           vehicle only from the beats in its cluster.
         </p>
       </div>
