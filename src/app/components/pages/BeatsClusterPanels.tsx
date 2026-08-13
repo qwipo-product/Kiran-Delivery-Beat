@@ -96,7 +96,7 @@ export function BeatsPanel() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
-                  {['Beat Name', 'Area', 'Cluster', 'Status', 'Actions'].map(label => (
+                  {['Beat Name', 'Area', 'Cluster', 'Actions'].map(label => (
                     <th
                       key={label}
                       className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider bg-gray-50"
@@ -109,7 +109,7 @@ export function BeatsPanel() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentBeats.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-sm text-gray-500">
+                    <td colSpan={4} className="px-4 py-10 text-center text-sm text-gray-500">
                       No beats found. Add one manually or upload an Excel file.
                     </td>
                   </tr>
@@ -128,15 +128,6 @@ export function BeatsPanel() {
                         ) : (
                           <span className="text-sm text-gray-400">Unassigned</span>
                         )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          beat.status === 'Active'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-600'
-                        }`}>
-                          {beat.status}
-                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
@@ -206,11 +197,13 @@ export function ClustersPanel({ onNavigateToAddCluster }: ClustersPanelProps) {
 
   const filteredClusters = clusters.filter(c => {
     const q = clusterSearch.toLowerCase();
-    const vehicle = vehicles.find(v => v.id === c.vehicleId);
+    const matchesVehicle = c.vehicleIds.some(id =>
+      vehicles.find(v => v.id === id)?.vehicleNumber.toLowerCase().includes(q)
+    );
     return (
       c.name.toLowerCase().includes(q) ||
       c.code.toLowerCase().includes(q) ||
-      (vehicle?.vehicleNumber.toLowerCase().includes(q) ?? false)
+      matchesVehicle
     );
   });
 
@@ -268,7 +261,9 @@ export function ClustersPanel({ onNavigateToAddCluster }: ClustersPanelProps) {
         ) : (
           <div className="grid grid-cols-2 gap-4">
             {filteredClusters.map(cluster => {
-              const vehicle = vehicles.find(v => v.id === cluster.vehicleId);
+              const clusterVehicles = cluster.vehicleIds
+                .map(id => vehicles.find(v => v.id === id))
+                .filter(Boolean);
               const clusterBeats = cluster.beatIds
                 .map(id => beats.find(b => b.id === id))
                 .filter(Boolean);
@@ -308,20 +303,26 @@ export function ClustersPanel({ onNavigateToAddCluster }: ClustersPanelProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-3">
-                    <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
-                      <Truck className="w-4 h-4 text-[#2D6EF5]" />
-                    </div>
-                    {vehicle ? (
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900">{vehicle.vehicleNumber}</p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {vehicle.type} &middot; {vehicle.capacityKg} kg &middot; {vehicle.driverName}
-                        </p>
-                      </div>
-                    ) : (
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                    {clusterVehicles.length} vehicle{clusterVehicles.length === 1 ? '' : 's'}
+                  </p>
+                  <div className="space-y-2 mb-4">
+                    {clusterVehicles.length === 0 && (
                       <p className="text-sm text-gray-500">No vehicle assigned</p>
                     )}
+                    {clusterVehicles.map(vehicle => (
+                      <div key={vehicle!.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                          <Truck className="w-4 h-4 text-[#2D6EF5]" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900">{vehicle!.vehicleNumber}</p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {vehicle!.type} &middot; {vehicle!.capacityKg} kg &middot; {vehicle!.driverName}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">

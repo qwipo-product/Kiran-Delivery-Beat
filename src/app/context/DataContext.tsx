@@ -78,7 +78,7 @@ export interface Cluster {
   name: string;
   code: string;
   beatIds: string[];
-  vehicleId: string;
+  vehicleIds: string[];
   status: 'Active' | 'Inactive';
   createdDate: string;
 }
@@ -1391,7 +1391,7 @@ const initialClusters: Cluster[] = [
     name: 'West Hyderabad Cluster',
     code: 'CLU-001',
     beatIds: ['B1', 'B2', 'B5'],
-    vehicleId: 'V3',
+    vehicleIds: ['V3', 'V5'],
     status: 'Active',
     createdDate: '05/03/26',
   },
@@ -1400,7 +1400,7 @@ const initialClusters: Cluster[] = [
     name: 'Central Cluster',
     code: 'CLU-002',
     beatIds: ['B6', 'B7'],
-    vehicleId: 'V4',
+    vehicleIds: ['V4'],
     status: 'Active',
     createdDate: '06/03/26',
   },

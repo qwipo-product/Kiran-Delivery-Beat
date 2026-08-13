@@ -19,7 +19,7 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
     cluster?.code ?? `CLU-${String(clusters.length + 1).padStart(3, '0')}`
   );
   const [selectedBeatIds, setSelectedBeatIds] = useState<string[]>(cluster?.beatIds ?? []);
-  const [selectedVehicleId, setSelectedVehicleId] = useState(cluster?.vehicleId ?? '');
+  const [selectedVehicleIds, setSelectedVehicleIds] = useState<string[]>(cluster?.vehicleIds ?? []);
   const [beatSearch, setBeatSearch] = useState('');
   const [vehicleSearch, setVehicleSearch] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -39,7 +39,7 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
     const map = new Map<string, string>();
     clusters.forEach(c => {
       if (c.id === cluster?.id) return;
-      map.set(c.vehicleId, c.name);
+      c.vehicleIds.forEach(vId => map.set(vId, c.name));
     });
     return map;
   }, [clusters, cluster?.id]);
@@ -53,7 +53,7 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
     /* Vehicles out on a trip are not offered for clustering. The one already
        tagged to this cluster stays visible even if it is mid-trip, so an edit
        never silently drops the current selection. */
-    if (v.status === 'On Trip' && v.id !== selectedVehicleId) return false;
+    if (v.status === 'On Trip' && !selectedVehicleIds.includes(v.id)) return false;
 
     const q = vehicleSearch.toLowerCase();
     return (
@@ -83,15 +83,40 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
     }
   };
 
-  const selectedVehicle = vehicles.find(v => v.id === selectedVehicleId);
+  const selectableVehicles = filteredVehicles.filter(
+    v => !vehicleOwner.has(v.id) && v.status !== 'Inactive'
+  );
+  const allVehiclesChecked =
+    selectableVehicles.length > 0 &&
+    selectableVehicles.every(v => selectedVehicleIds.includes(v.id));
+
+  const toggleVehicle = (id: string) => {
+    setSelectedVehicleIds(prev =>
+      prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAllVehicles = () => {
+    if (allVehiclesChecked) {
+      setSelectedVehicleIds(prev => prev.filter(id => !selectableVehicles.some(v => v.id === id)));
+    } else {
+      setSelectedVehicleIds(prev => [...new Set([...prev, ...selectableVehicles.map(v => v.id)])]);
+    }
+  };
+
+  const selectedVehicles = selectedVehicleIds
+    .map(id => vehicles.find(v => v.id === id))
+    .filter(Boolean) as typeof vehicles;
+  const totalCapacity = selectedVehicles.reduce((sum, v) => sum + v.capacityKg, 0);
+
   const nameError = submitted && !name.trim();
   const beatsError = submitted && selectedBeatIds.length === 0;
-  const vehicleError = submitted && !selectedVehicleId;
+  const vehicleError = submitted && selectedVehicleIds.length === 0;
 
   const handleSave = () => {
     setSubmitted(true);
-    if (!name.trim() || selectedBeatIds.length === 0 || !selectedVehicleId) {
-      toast.error('Add a cluster name, at least one beat, and a vehicle.');
+    if (!name.trim() || selectedBeatIds.length === 0 || selectedVehicleIds.length === 0) {
+      toast.error('Add a cluster name, at least one beat, and at least one vehicle.');
       return;
     }
 
@@ -100,7 +125,7 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
         name: name.trim(),
         code: code.trim(),
         beatIds: selectedBeatIds,
-        vehicleId: selectedVehicleId,
+        vehicleIds: selectedVehicleIds,
       });
       toast.success(`"${name.trim()}" updated.`);
     } else {
@@ -108,7 +133,7 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
         name: name.trim(),
         code: code.trim(),
         beatIds: selectedBeatIds,
-        vehicleId: selectedVehicleId,
+        vehicleIds: selectedVehicleIds,
         status: 'Active',
       });
       toast.success(`"${name.trim()}" created with ${selectedBeatIds.length} beats.`);
@@ -253,14 +278,21 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
           vehicleError ? 'border-red-400' : 'border-gray-200'
         }`}>
           <div className="px-4 py-3 border-b border-gray-200 flex-shrink-0">
-            <div className="flex items-center gap-2 mb-3">
-              <Truck className="w-4 h-4 text-[#2D6EF5]" />
-              <h2 className="text-sm font-semibold text-gray-900">Select Vehicle</h2>
-              {selectedVehicle && (
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-[#2D6EF5]" />
+                <h2 className="text-sm font-semibold text-gray-900">Select Vehicles</h2>
                 <span className="px-2 py-0.5 rounded-full bg-[#DBEAFE] text-[#1E40AF] text-xs font-medium">
-                  {selectedVehicle.vehicleNumber}
+                  {selectedVehicleIds.length} selected
                 </span>
-              )}
+              </div>
+              <button
+                onClick={toggleAllVehicles}
+                disabled={selectableVehicles.length === 0}
+                className="text-xs font-medium text-[#2D6EF5] hover:text-blue-700 disabled:text-gray-300 disabled:cursor-not-allowed"
+              >
+                {allVehiclesChecked ? 'Clear all' : 'Select all'}
+              </button>
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -281,21 +313,21 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
             {filteredVehicles.map(vehicle => {
               const owner = vehicleOwner.get(vehicle.id);
               const isLocked = Boolean(owner) || vehicle.status === 'Inactive';
-              const isSelected = selectedVehicleId === vehicle.id;
+              const isSelected = selectedVehicleIds.includes(vehicle.id);
               return (
                 <label
                   key={vehicle.id}
-                  onClick={() => !isLocked && setSelectedVehicleId(vehicle.id)}
+                  onClick={() => !isLocked && toggleVehicle(vehicle.id)}
                   className={`flex items-center gap-3 px-4 py-3 ${
                     isLocked
                       ? 'opacity-60 cursor-not-allowed'
                       : `cursor-pointer ${isSelected ? 'bg-indigo-50/40' : 'hover:bg-gray-50'}`
                   }`}
                 >
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    isSelected ? 'border-[#2D6EF5] bg-white' : 'border-gray-300 bg-white'
+                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                    isSelected ? 'border-[#2D6EF5] bg-[#2D6EF5]' : 'border-gray-300 bg-white'
                   }`}>
-                    {isSelected && <div className="w-2 h-2 rounded-full bg-[#2D6EF5]" />}
+                    {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -328,7 +360,7 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
           {vehicleError && (
             <div className="px-4 py-2 border-t border-red-200 bg-red-50 flex items-center gap-1.5 flex-shrink-0">
               <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-              <p className="text-xs text-red-600">Select a vehicle.</p>
+              <p className="text-xs text-red-600">Select at least one vehicle.</p>
             </div>
           )}
         </div>
@@ -339,11 +371,14 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
         <p className="text-sm text-gray-600">
           <span className="font-semibold text-gray-900">{selectedBeatIds.length}</span> beat
           {selectedBeatIds.length === 1 ? '' : 's'} selected
-          {selectedVehicle && (
+          {selectedVehicles.length > 0 && (
             <>
-              {' '}&middot; vehicle{' '}
-              <span className="font-semibold text-gray-900">{selectedVehicle.vehicleNumber}</span>
-              <span className="text-gray-500"> ({selectedVehicle.capacityKg} kg)</span>
+              {' '}&middot;{' '}
+              <span className="font-semibold text-gray-900">{selectedVehicles.length}</span>
+              {' '}vehicle{selectedVehicles.length === 1 ? '' : 's'}{' '}
+              <span className="text-gray-500">
+                ({selectedVehicles.map(v => v.vehicleNumber).join(', ')} &middot; {totalCapacity} kg total)
+              </span>
             </>
           )}
         </p>
