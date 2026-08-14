@@ -54,9 +54,25 @@ export function BeatsPanel() {
   return (
     <div className="space-y-6">
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-base font-semibold text-gray-900">Beats</h2>
-          <div className="flex items-center gap-2">
+        {/* Heading, search and actions all share one row */}
+        <div className="flex items-center gap-3 mb-1">
+          <h2 className="text-base font-semibold text-gray-900 flex-shrink-0">Beats</h2>
+
+          <div className="relative w-64 flex-shrink-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search beats..."
+              value={beatSearch}
+              onChange={e => {
+                setBeatSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full h-9 pl-9 pr-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent"
+            />
+          </div>
+
+          <div className="ml-auto flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => setShowUploadBeats(true)}
               className="h-9 px-4 flex items-center gap-1.5 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
@@ -73,23 +89,9 @@ export function BeatsPanel() {
             </button>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mb-5">
+        <p className="text-xs text-gray-500 mb-4">
           The beats available in this LBNP. Add them one at a time or import a list from Excel.
         </p>
-
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search beats by name or area..."
-            value={beatSearch}
-            onChange={e => {
-              setBeatSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full h-9 pl-9 pr-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent"
-          />
-        </div>
 
         <div className="border border-gray-200 rounded-lg overflow-hidden">
           <div className="max-h-[420px] overflow-y-auto">
