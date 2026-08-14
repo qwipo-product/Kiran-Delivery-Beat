@@ -15,9 +15,6 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
   const isEdit = Boolean(cluster);
 
   const [name, setName] = useState(cluster?.name ?? '');
-  const [code, setCode] = useState(
-    cluster?.code ?? `CLU-${String(clusters.length + 1).padStart(3, '0')}`
-  );
   const [selectedBeatIds, setSelectedBeatIds] = useState<string[]>(cluster?.beatIds ?? []);
   const [selectedVehicleIds, setSelectedVehicleIds] = useState<string[]>(cluster?.vehicleIds ?? []);
   const [beatSearch, setBeatSearch] = useState('');
@@ -123,7 +120,6 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
     if (isEdit && cluster) {
       updateCluster(cluster.id, {
         name: name.trim(),
-        code: code.trim(),
         beatIds: selectedBeatIds,
         vehicleIds: selectedVehicleIds,
       });
@@ -131,10 +127,8 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
     } else {
       addCluster({
         name: name.trim(),
-        code: code.trim(),
         beatIds: selectedBeatIds,
         vehicleIds: selectedVehicleIds,
-        status: 'Active',
       });
       toast.success(`"${name.trim()}" created with ${selectedBeatIds.length} beats.`);
     }
@@ -181,15 +175,6 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
               }`}
             />
             {nameError && <p className="text-xs text-red-500 mt-1">Cluster name is required.</p>}
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Cluster Code</label>
-            <input
-              type="text"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              className="w-full h-9 px-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent"
-            />
           </div>
         </div>
       </div>

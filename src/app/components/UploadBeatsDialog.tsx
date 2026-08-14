@@ -117,7 +117,6 @@ export function UploadBeatsDialog({ onClose, onImported }: UploadBeatsDialogProp
         // Codes are system-generated; the upload file does not carry them.
         code: `BT-${String(beats.length + i + 1).padStart(3, '0')}`,
         area: r.area || '—',
-        status: 'Active' as const,
         source: 'Excel' as const,
       }))
     );

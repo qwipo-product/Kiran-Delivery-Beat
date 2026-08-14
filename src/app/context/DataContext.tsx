@@ -59,7 +59,6 @@ export interface Beat {
   name: string;
   code: string;
   area: string;
-  status: 'Active' | 'Inactive';
   source: 'System' | 'Manual' | 'Excel';
   createdDate: string;
 }
@@ -76,11 +75,8 @@ export interface Vehicle {
 export interface Cluster {
   id: string;
   name: string;
-  code: string;
   beatIds: string[];
   vehicleIds: string[];
-  status: 'Active' | 'Inactive';
-  createdDate: string;
 }
 
 export interface DeliveryRoute {
@@ -123,7 +119,7 @@ interface DataContextType {
   addBeats: (beats: Omit<Beat, 'id' | 'createdDate'>[]) => void;
   updateBeat: (id: string, beat: Partial<Beat>) => void;
   deleteBeat: (id: string) => void;
-  addCluster: (cluster: Omit<Cluster, 'id' | 'createdDate'>) => void;
+  addCluster: (cluster: Omit<Cluster, 'id'>) => void;
   updateCluster: (id: string, cluster: Partial<Cluster>) => void;
   deleteCluster: (id: string) => void;
 }
@@ -1362,16 +1358,16 @@ const nextId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${idCou
 
 // Beats currently referenced by orders in this LBNP
 const initialBeats: Beat[] = [
-  { id: 'B1', name: 'Kphb', code: 'BT-001', area: 'Kukatpally', status: 'Active', source: 'System', createdDate: '01/03/26' },
-  { id: 'B2', name: 'Beat 1', code: 'BT-002', area: 'Madhapur', status: 'Active', source: 'System', createdDate: '01/03/26' },
-  { id: 'B3', name: 'Beat 2', code: 'BT-003', area: 'Gachibowli', status: 'Active', source: 'System', createdDate: '01/03/26' },
-  { id: 'B4', name: 'Beat 3', code: 'BT-004', area: 'Kondapur', status: 'Active', source: 'System', createdDate: '01/03/26' },
-  { id: 'B5', name: 'Beat 4', code: 'BT-005', area: 'Miyapur', status: 'Active', source: 'System', createdDate: '02/03/26' },
-  { id: 'B6', name: 'Beat 5', code: 'BT-006', area: 'Ameerpet', status: 'Active', source: 'System', createdDate: '02/03/26' },
-  { id: 'B7', name: 'Beat 6', code: 'BT-007', area: 'Begumpet', status: 'Active', source: 'System', createdDate: '02/03/26' },
-  { id: 'B8', name: 'Beat 7', code: 'BT-008', area: 'Secunderabad', status: 'Active', source: 'System', createdDate: '03/03/26' },
-  { id: 'B9', name: 'Beat 8', code: 'BT-009', area: 'LB Nagar', status: 'Active', source: 'System', createdDate: '03/03/26' },
-  { id: 'B10', name: 'Beat 9', code: 'BT-010', area: 'Uppal', status: 'Active', source: 'System', createdDate: '03/03/26' },
+  { id: 'B1', name: 'Kphb', code: 'BT-001', area: 'Kukatpally', source: 'System', createdDate: '01/03/26' },
+  { id: 'B2', name: 'Beat 1', code: 'BT-002', area: 'Madhapur', source: 'System', createdDate: '01/03/26' },
+  { id: 'B3', name: 'Beat 2', code: 'BT-003', area: 'Gachibowli', source: 'System', createdDate: '01/03/26' },
+  { id: 'B4', name: 'Beat 3', code: 'BT-004', area: 'Kondapur', source: 'System', createdDate: '01/03/26' },
+  { id: 'B5', name: 'Beat 4', code: 'BT-005', area: 'Miyapur', source: 'System', createdDate: '02/03/26' },
+  { id: 'B6', name: 'Beat 5', code: 'BT-006', area: 'Ameerpet', source: 'System', createdDate: '02/03/26' },
+  { id: 'B7', name: 'Beat 6', code: 'BT-007', area: 'Begumpet', source: 'System', createdDate: '02/03/26' },
+  { id: 'B8', name: 'Beat 7', code: 'BT-008', area: 'Secunderabad', source: 'System', createdDate: '03/03/26' },
+  { id: 'B9', name: 'Beat 8', code: 'BT-009', area: 'LB Nagar', source: 'System', createdDate: '03/03/26' },
+  { id: 'B10', name: 'Beat 9', code: 'BT-010', area: 'Uppal', source: 'System', createdDate: '03/03/26' },
 ];
 
 // Vehicles available to this LBNP (synced from the LSP: Resources > Vehicles)
@@ -1389,20 +1385,14 @@ const initialClusters: Cluster[] = [
   {
     id: 'CL1',
     name: 'West Hyderabad Cluster',
-    code: 'CLU-001',
     beatIds: ['B1', 'B2', 'B5'],
     vehicleIds: ['V3', 'V5'],
-    status: 'Active',
-    createdDate: '05/03/26',
   },
   {
     id: 'CL2',
     name: 'Central Cluster',
-    code: 'CLU-002',
     beatIds: ['B6', 'B7'],
     vehicleIds: ['V4'],
-    status: 'Active',
-    createdDate: '06/03/26',
   },
 ];
 
@@ -1441,8 +1431,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   // Cluster Actions
-  const addCluster = (cluster: Omit<Cluster, 'id' | 'createdDate'>) => {
-    setClusters(prev => [...prev, { ...cluster, id: nextId('CL'), createdDate: todayLabel() }]);
+  const addCluster = (cluster: Omit<Cluster, 'id'>) => {
+    setClusters(prev => [...prev, { ...cluster, id: nextId('CL') }]);
   };
 
   const updateCluster = (id: string, clusterUpdate: Partial<Cluster>) => {

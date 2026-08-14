@@ -19,7 +19,6 @@ export function BeatDialog({ onClose, beat, onCreated }: BeatDialogProps) {
 
   const [name, setName] = useState(beat?.name ?? '');
   const [area, setArea] = useState(beat?.area === '—' ? '' : beat?.area ?? '');
-  const [status, setStatus] = useState<Beat['status']>(beat?.status ?? 'Active');
   const [error, setError] = useState('');
 
   const handleSave = () => {
@@ -40,7 +39,6 @@ export function BeatDialog({ onClose, beat, onCreated }: BeatDialogProps) {
       updateBeat(beat.id, {
         name: trimmed,
         area: area.trim() || '—',
-        status,
       });
       toast.success(`Beat "${trimmed}" updated.`);
     } else {
@@ -49,7 +47,6 @@ export function BeatDialog({ onClose, beat, onCreated }: BeatDialogProps) {
         // Codes are system-generated; they are not user-editable.
         code: `BT-${String(beats.length + 1).padStart(3, '0')}`,
         area: area.trim() || '—',
-        status,
         source: 'Manual',
       });
       toast.success(`Beat "${trimmed}" added.`);
@@ -114,28 +111,6 @@ export function BeatDialog({ onClose, beat, onCreated }: BeatDialogProps) {
               placeholder="e.g. Kukatpally"
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <div className="flex items-center gap-6">
-              {(['Active', 'Inactive'] as const).map(option => (
-                <label
-                  key={option}
-                  className="flex items-center gap-2 cursor-pointer group"
-                  onClick={() => setStatus(option)}
-                >
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                    status === option
-                      ? 'border-[#2D6EF5] bg-white'
-                      : 'border-gray-300 bg-white group-hover:border-[#2D6EF5]'
-                  }`}>
-                    {status === option && <div className="w-2 h-2 rounded-full bg-[#2D6EF5]" />}
-                  </div>
-                  <span className="text-sm text-gray-700">{option}</span>
-                </label>
-              ))}
-            </div>
           </div>
         </div>
 

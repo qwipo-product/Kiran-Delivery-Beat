@@ -202,11 +202,7 @@ export function ClustersPanel({ onNavigateToAddCluster }: ClustersPanelProps) {
     const matchesVehicle = c.vehicleIds.some(id =>
       vehicles.find(v => v.id === id)?.vehicleNumber.toLowerCase().includes(q)
     );
-    return (
-      c.name.toLowerCase().includes(q) ||
-      c.code.toLowerCase().includes(q) ||
-      matchesVehicle
-    );
+    return c.name.toLowerCase().includes(q) || matchesVehicle;
   });
 
   const handleDeleteCluster = (cluster: Cluster) => {
@@ -238,7 +234,7 @@ export function ClustersPanel({ onNavigateToAddCluster }: ClustersPanelProps) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search clusters by name, code or vehicle..."
+            placeholder="Search clusters by name or vehicle..."
             value={clusterSearch}
             onChange={e => setClusterSearch(e.target.value)}
             className="w-full h-9 pl-9 pr-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2D6EF5] focus:border-transparent"
@@ -273,19 +269,7 @@ export function ClustersPanel({ onNavigateToAddCluster }: ClustersPanelProps) {
                 <div key={cluster.id} className="border border-gray-200 rounded-lg p-5">
                   <div className="flex items-start justify-between mb-4">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base font-semibold text-gray-900 truncate">{cluster.name}</h3>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          cluster.status === 'Active'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {cluster.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {cluster.code} &middot; created {cluster.createdDate}
-                      </p>
+                      <h3 className="text-base font-semibold text-gray-900 truncate">{cluster.name}</h3>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
