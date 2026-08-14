@@ -304,7 +304,7 @@ export function ClustersPanel({ onNavigateToAddCluster }: ClustersPanelProps) {
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-900">{vehicle!.vehicleNumber}</p>
                           <p className="text-xs text-gray-500 truncate">
-                            {vehicle!.type} &middot; {vehicle!.capacityKg} kg &middot; {vehicle!.driverName}
+                            {vehicle!.capacityKg} kg
                           </p>
                         </div>
                       </div>

@@ -320,7 +320,7 @@ export function AddClusterPage({ onBack, cluster }: AddClusterPageProps) {
                       <span className="text-xs text-gray-400">{vehicle.capacityKg} kg</span>
                     </div>
                     <p className="text-xs text-gray-500 truncate">
-                      {vehicle.type} &middot; {vehicle.driverName}
+                      {vehicle.driverName}
                     </p>
                   </div>
                   {owner ? (
