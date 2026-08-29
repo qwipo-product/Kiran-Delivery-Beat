@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Truck, BarChart3, CheckCircle2, Calendar, MapPin, Eye, Filter, Map as MapIcon, Hash, ClipboardList } from 'lucide-react';
+import { Truck, BarChart3, CheckCircle2, Calendar, MapPin, Eye, Filter, Map as MapIcon, Hash, ClipboardList, Receipt } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -167,22 +167,244 @@ interface PickupSku {
   name: string;
   mrp: number;
   upc: number;
+  gstRate: number;
 }
 
 const PICKUP_SKU_POOL: PickupSku[] = [
-  { name: 'Goyal Gold Yellow Jowari -1 Bag, 50 Kg', mrp: 7000, upc: 0 },
-  { name: 'Shalimar R Atta (Poori) -1 Kg, 1 Pack', mrp: 60, upc: 25 },
-  { name: 'Shalimar Suji (Bombay Rava) -1 Kg, 1 Pack', mrp: 80, upc: 25 },
-  { name: 'Balaji Urad Gundu, 50 KG Bag', mrp: 8000, upc: 0 },
-  { name: 'Goyal Gold Fine Premium Quality Green Moong -1 Bag, 10 Kg', mrp: 2500, upc: 0 },
-  { name: 'Goyal Gold Kabuli Chana -1 Bag, 10 Kg', mrp: 2500, upc: 0 },
-  { name: 'Apple Brand Kabutar Jowari, 50 Kg Bag', mrp: 2000, upc: 0 },
-  { name: 'Double Diamond Premium Sharbati Wheat, 50 KG Bag', mrp: 2500, upc: 0 },
-  { name: 'Farm Gold Chakki Atta -1 Bag, 26 Kg', mrp: 1200, upc: 0 },
-  { name: 'Shalimar Maida, 1 KG Pack', mrp: 80, upc: 25 },
-  { name: 'Shivtara Bakery Maida, 50 KG Bag', mrp: 2500, upc: 0 },
-  { name: 'Sri Lohitha Soft Idly Ravva, 26 KG Bag', mrp: 1500, upc: 0 },
+  { name: 'Goyal Gold Yellow Jowari -1 Bag, 50 Kg', mrp: 7000, upc: 0, gstRate: 0 },
+  { name: 'Shalimar R Atta (Poori) -1 Kg, 1 Pack', mrp: 60, upc: 25, gstRate: 5 },
+  { name: 'Shalimar Suji (Bombay Rava) -1 Kg, 1 Pack', mrp: 80, upc: 25, gstRate: 5 },
+  { name: 'Balaji Urad Gundu, 50 KG Bag', mrp: 8000, upc: 0, gstRate: 0 },
+  { name: 'Goyal Gold Fine Premium Quality Green Moong -1 Bag, 10 Kg', mrp: 2500, upc: 0, gstRate: 0 },
+  { name: 'Goyal Gold Kabuli Chana -1 Bag, 10 Kg', mrp: 2500, upc: 0, gstRate: 0 },
+  { name: 'Apple Brand Kabutar Jowari, 50 Kg Bag', mrp: 2000, upc: 0, gstRate: 0 },
+  { name: 'Double Diamond Premium Sharbati Wheat, 50 KG Bag', mrp: 2500, upc: 0, gstRate: 0 },
+  { name: 'Farm Gold Chakki Atta -1 Bag, 26 Kg', mrp: 1200, upc: 0, gstRate: 0 },
+  { name: 'Shalimar Maida, 1 KG Pack', mrp: 80, upc: 25, gstRate: 5 },
+  { name: 'Shivtara Bakery Maida, 50 KG Bag', mrp: 2500, upc: 0, gstRate: 0 },
+  { name: 'Sri Lohitha Soft Idly Ravva, 26 KG Bag', mrp: 1500, upc: 0, gstRate: 0 },
 ];
+
+// Directory of pickup sellers' own business details, used as the "from" letterhead
+// on the Seller Wise Orders PDF (replacing a generic company letterhead).
+interface SellerInfo {
+  address: string;
+  phone: string;
+  gstin: string;
+}
+
+const SELLER_DIRECTORY: Record<string, SellerInfo> = {
+  'Sree Venkateswara Traders': { address: '8-2-120, Road No 3, Banjara Hills, Hyderabad, Telangana 500034', phone: '9182399613', gstin: '36ABCVS1234A1Z5' },
+  'Sri Sarda Enterprises': { address: '12-3-45, Nagarjuna Nagar Colony, Hyderabad, Telangana 500073', phone: '9948123456', gstin: '36ABCSS5678B1Z2' },
+  'SR Enterprises': { address: '4-5-67, Kukatpally Y Junction, Hyderabad, Telangana 500072', phone: '9848234567', gstin: '36ABCSR9012C1Z8' },
+  'Balaji Wholesale Traders': { address: '2-8-90, Secunderabad Main Road, Secunderabad, Telangana 500003', phone: '9866345678', gstin: '36ABCBW3456D1Z1' },
+  'Ramesh Provision Stores': { address: '15-6-23, Malakpet Colony, Hyderabad, Telangana 500036', phone: '9963456789', gstin: '36ABCRP7890E1Z4' },
+  'Anand Distributors': { address: '9-1-34, Ameerpet Circle, Hyderabad, Telangana 500016', phone: '9491567890', gstin: '36ABCAD1234F1Z6' },
+};
+
+function getSellerInfo(seller: string): SellerInfo {
+  return SELLER_DIRECTORY[seller] ?? { address: 'Hyderabad, Telangana, India', phone: '-', gstin: 'UNREGISTERED' };
+}
+
+// Retailers each seller's orders can be "sold to" for the Seller Wise Orders PDF.
+interface RetailerInfo {
+  name: string;
+  address: string;
+  phone: string;
+}
+
+const RETAILER_POOL: RetailerInfo[] = [
+  { name: 'Metro Supermart', address: 'Plot 45, Miyapur Main Road, Hyderabad, Telangana 500049' , phone: '9182234567' },
+  { name: 'Fresh Bazaar', address: 'Cyber Towers, Gachibowli, Hyderabad, Telangana 500032', phone: '9876123456' },
+  { name: 'Smart Retail', address: 'Road No 12, Banjara Hills, Hyderabad, Telangana 500034', phone: '9192837465' },
+  { name: 'Green Valley Store', address: 'Kompally Circle, Kompally, Hyderabad, Telangana 500014', phone: '9345678901' },
+  { name: 'Fresh Corner', address: 'Kukatpally Housing Board Colony, Hyderabad, Telangana 500072', phone: '9123456789' },
+  { name: 'City Mart', address: 'Dilsukhnagar Main Road, Hyderabad, Telangana 500036', phone: '9876543210' },
+  { name: 'Sunrise Traders', address: 'Nizampet Road, Bachupally, Hyderabad, Telangana 500090', phone: '9988776655' },
+  { name: 'Quick Shop', address: 'LB Nagar Main Road, Hyderabad, Telangana 500074', phone: '9966554433' },
+  { name: 'Royal Stores', address: 'Uppal Main Road, Hyderabad, Telangana 500039', phone: '9182115778' },
+  { name: 'Community Store', address: 'Nizampet Circle, Hyderabad, Telangana 500090', phone: '9901234567' },
+  { name: 'Super Bazar', address: 'Patancheru Main Road, Hyderabad, Telangana 502319', phone: '9701234567' },
+  { name: 'Premium Mart', address: 'Santosh Nagar, Hyderabad, Telangana 500059', phone: '9885470982' },
+];
+
+interface SellerOrderLineItem {
+  description: string;
+  mrp: number;
+  qty: number;
+  css: number;
+  pcs: number;
+  taxableAmt: number;
+  sgst: number;
+  cgst: number;
+  price: number;
+  total: number;
+}
+
+interface SellerOrder {
+  orderNo: string;
+  orderDate: string;
+  invoiceNo: string;
+  invoiceDate: string;
+  retailer: RetailerInfo;
+  items: SellerOrderLineItem[];
+}
+
+/** Deterministic pseudo-random set of retailer orders for a trip's pickup, seeded off the trip id. */
+function generateSellerOrders(trip: Trip): SellerOrder[] {
+  const seed = trip.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const orderDate = trip.arrivalTime.slice(0, 10);
+  const orderCount = 2 + (seed % 2); // 2-3 orders per trip
+
+  return Array.from({ length: orderCount }, (_, oi) => {
+    const retailer = RETAILER_POOL[(seed + oi * 3) % RETAILER_POOL.length];
+    const lineCount = 1 + ((seed + oi) % 2); // 1-2 line items
+    const items: SellerOrderLineItem[] = Array.from({ length: lineCount }, (_, ii) => {
+      const sku = PICKUP_SKU_POOL[(seed + oi * 5 + ii * 7) % PICKUP_SKU_POOL.length];
+      const qty = sku.upc > 0 ? sku.upc * (1 + ((seed + ii) % 3)) : 1 + ((seed + oi + ii) % 3);
+      const css = sku.upc > 0 ? Math.floor(qty / sku.upc) : 0;
+      const pcs = sku.upc > 0 ? qty % sku.upc : qty;
+      const unitPrice = Math.round(sku.mrp * (0.72 + ((seed + ii) % 20) / 100) * 100) / 100;
+      const total = Math.round(unitPrice * qty * 100) / 100;
+      const taxableAmt = Math.round((total / (1 + sku.gstRate / 100)) * 100) / 100;
+      const gstEach = Math.round(((total - taxableAmt) / 2) * 100) / 100;
+      return { description: sku.name, mrp: sku.mrp, qty, css, pcs, taxableAmt, sgst: gstEach, cgst: gstEach, price: unitPrice, total };
+    });
+
+    return {
+      orderNo: `QWIP${(1000000000000000 + seed * 97 + oi * 313).toString().slice(0, 16)}`,
+      orderDate,
+      invoiceNo: `SINV-26-${(96000 + seed * 3 + oi).toString().padStart(8, '0')}`,
+      invoiceDate: orderDate,
+      retailer,
+      items,
+    };
+  });
+}
+
+/** Build a printable PDF of a seller's orders, styled like a consolidated receipt per order. */
+function buildSellerOrdersPdf(seller: string, orders: SellerOrder[]) {
+  const sellerInfo = getSellerInfo(seller);
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  orders.forEach((order, orderIndex) => {
+    if (orderIndex > 0) doc.addPage();
+
+    let y = 15;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(seller, 14, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    const sellerAddrLines = doc.splitTextToSize(sellerInfo.address, 58);
+    doc.text(sellerAddrLines, 14, y + 5);
+    let sellerY = y + 5 + sellerAddrLines.length * 3.6;
+    doc.text(`Phone: ${sellerInfo.phone}`, 14, sellerY);
+    doc.text(`GSTIN: ${sellerInfo.gstin}`, 14, sellerY + 4);
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(order.retailer.name, 78, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    const retailerAddrLines = doc.splitTextToSize(order.retailer.address, 58);
+    doc.text(retailerAddrLines, 78, y + 5);
+    let retailerY = y + 5 + retailerAddrLines.length * 3.6;
+    doc.text(`Phone: ${order.retailer.phone}`, 78, retailerY);
+    doc.text('GSTIN: UNREGISTERED', 78, retailerY + 4);
+
+    doc.setFontSize(8.5);
+    doc.text(`Order No: ${order.orderNo}`, 196, y, { align: 'right' });
+    doc.text(`Order Date: ${order.orderDate}`, 196, y + 4, { align: 'right' });
+    doc.text(`Invoice No: ${order.invoiceNo}`, 196, y + 8, { align: 'right' });
+    doc.text(`Invoice Date: ${order.invoiceDate}`, 196, y + 12, { align: 'right' });
+
+    const headerBottom = Math.max(sellerY + 8, retailerY + 8, y + 16);
+
+    autoTable(doc, {
+      startY: headerBottom,
+      head: [['S.no', 'Item Description', 'MRP', 'Qty', 'Css', 'Pcs', 'Taxable Amt', 'SGST', 'CGST', 'Price', 'Total']],
+      body: order.items.map((item, i) => [
+        i + 1,
+        item.description,
+        item.mrp.toFixed(2),
+        item.qty,
+        item.css,
+        item.pcs,
+        item.taxableAmt.toFixed(2),
+        item.sgst.toFixed(2),
+        item.cgst.toFixed(2),
+        item.price.toFixed(2),
+        item.total.toFixed(2),
+      ]),
+      styles: { fontSize: 7.5 },
+      headStyles: { fillColor: [45, 110, 245] },
+      margin: { left: 14, right: 14 },
+    });
+
+    const subTotal = order.items.reduce((s, i) => s + i.taxableAmt, 0);
+    const tax = order.items.reduce((s, i) => s + i.sgst + i.cgst, 0);
+    const grandTotal = subTotal + tax;
+
+    const slabMap = new Map<number, { sgst: number; cgst: number }>();
+    order.items.forEach(item => {
+      const rate = Math.round(((item.sgst + item.cgst) / (item.taxableAmt || 1)) * 100);
+      const existing = slabMap.get(rate) ?? { sgst: 0, cgst: 0 };
+      existing.sgst += item.sgst;
+      existing.cgst += item.cgst;
+      slabMap.set(rate, existing);
+    });
+
+    const afterItemsY = (doc as any).lastAutoTable.finalY + 4;
+
+    autoTable(doc, {
+      startY: afterItemsY,
+      head: [['SLAB (%)', 'SGST', 'CGST', 'TOTAL GST']],
+      body: Array.from(slabMap.entries()).map(([rate, v]) => [
+        rate.toFixed(1), v.sgst.toFixed(2), v.cgst.toFixed(2), (v.sgst + v.cgst).toFixed(2),
+      ]),
+      foot: [['Total', ...['sgst', 'cgst'].map(k =>
+        Array.from(slabMap.values()).reduce((s, v) => s + (v as any)[k], 0).toFixed(2)
+      ), tax.toFixed(2)]],
+      styles: { fontSize: 7.5 },
+      headStyles: { fillColor: [230, 230, 230], textColor: 20 },
+      footStyles: { fillColor: [245, 245, 245], textColor: 20, fontStyle: 'bold' },
+      margin: { left: 14 },
+      tableWidth: 90,
+    });
+
+    autoTable(doc, {
+      startY: afterItemsY,
+      body: [
+        ['Sub-Total:', subTotal.toFixed(2)],
+        ['Tax:', tax.toFixed(2)],
+        ['Delivery Charges:', '0.00'],
+        ['Total Amount:', grandTotal.toFixed(2)],
+        ['Discount:', '0.00'],
+        ['Grand Total:', grandTotal.toFixed(2)],
+        ['Rounded Total:', Math.round(grandTotal).toFixed(2)],
+      ],
+      styles: { fontSize: 7.5 },
+      columnStyles: { 0: { fontStyle: 'bold' }, 1: { halign: 'right' } },
+      theme: 'grid',
+      margin: { left: 110 },
+      tableWidth: 72,
+    });
+
+    doc.setFontSize(7);
+    doc.setTextColor(120);
+    doc.text(
+      'This is a consolidated receipt for proof of purchase only and does not replace individual tax invoices. For tax purposes, please refer to the original invoices.',
+      pageWidth / 2, pageHeight - 14, { align: 'center' }
+    );
+    doc.text(`System Generated Receipt - No Signature Required, Order Number: ${order.orderNo}.`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+    doc.setTextColor(0);
+  });
+
+  return doc;
+}
 
 interface PickupListItem {
   pickupOrder: number;
@@ -497,6 +719,38 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
     );
   };
 
+  // Download a seller-wise orders PDF (one invoice-style page per order) for the selected trips.
+  const handleDownloadSellerOrders = () => {
+    if (selectedTripsList.length === 0) {
+      toast.error('Select at least one trip to download its seller-wise orders.');
+      return;
+    }
+    if (!isPickupListEnabled) {
+      toast.error('Seller-wise orders can only be downloaded for trips that are still Planned.');
+      return;
+    }
+
+    const sellerGroups = new Map<string, Trip[]>();
+    selectedTripsList.forEach(trip => {
+      const seller = trip.seller ?? 'Unassigned Seller';
+      const group = sellerGroups.get(seller) ?? [];
+      group.push(trip);
+      sellerGroups.set(seller, group);
+    });
+
+    const fileDate = new Date().toISOString().slice(0, 10);
+
+    sellerGroups.forEach((sellerTrips, seller) => {
+      const orders = sellerTrips.flatMap(trip => generateSellerOrders(trip));
+      const pdf = buildSellerOrdersPdf(seller, orders);
+      pdf.save(`${sanitizeFileName(seller)} - Orders - ${fileDate}.pdf`);
+    });
+
+    toast.success(
+      `Seller-wise orders downloaded for ${sellerGroups.size} seller${sellerGroups.size === 1 ? '' : 's'}.`
+    );
+  };
+
   // If a trip is selected, show trip details page
   if (selectedTripId) {
     const selectedTrip = trips.find(t => t.id === selectedTripId) ?? null;
@@ -542,6 +796,20 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
             >
               <ClipboardList className="w-4 h-4" />
               Seller Pickup List
+            </Button>
+            <Button
+              onClick={handleDownloadSellerOrders}
+              variant="outline"
+              className="gap-2"
+              disabled={!isPickupListEnabled}
+              title={
+                isPickupListEnabled
+                  ? 'Download a PDF of orders per seller'
+                  : 'Select only Planned trips to download their seller-wise orders'
+              }
+            >
+              <Receipt className="w-4 h-4" />
+              Seller Wise Orders
             </Button>
           </div>
         </div>
