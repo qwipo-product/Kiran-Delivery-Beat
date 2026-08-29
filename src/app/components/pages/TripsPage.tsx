@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Truck, BarChart3, CheckCircle2, Calendar, MapPin, Eye, Filter, Map as MapIcon, Hash, ClipboardList, Receipt } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Truck, BarChart3, CheckCircle2, Calendar, MapPin, Eye, Filter, Map as MapIcon, Hash, ClipboardList, Receipt, MoreHorizontal, ChevronDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -554,6 +554,21 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
   // Selection state
   const [selectedTripIds, setSelectedTripIds] = useState<Set<string>>(new Set());
 
+  // Bulk actions dropdown (shown once trips are selected)
+  const [isBulkActionsOpen, setIsBulkActionsOpen] = useState(false);
+  const bulkActionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isBulkActionsOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (bulkActionsRef.current && !bulkActionsRef.current.contains(event.target as Node)) {
+        setIsBulkActionsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isBulkActionsOpen]);
+
   // Apply filters to trips
   const filteredTrips = trips.filter(trip => {
     // Status filter
@@ -783,34 +798,6 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
               <Filter className="w-4 h-4" />
               Filter
             </Button>
-            <Button
-              onClick={handleDownloadPickupList}
-              variant="outline"
-              className="gap-2"
-              disabled={!isPickupListEnabled}
-              title={
-                isPickupListEnabled
-                  ? 'Download an Excel + PDF pickup list per seller'
-                  : 'Select only Planned trips to download their pickup list'
-              }
-            >
-              <ClipboardList className="w-4 h-4" />
-              Seller Pickup List
-            </Button>
-            <Button
-              onClick={handleDownloadSellerOrders}
-              variant="outline"
-              className="gap-2"
-              disabled={!isPickupListEnabled}
-              title={
-                isPickupListEnabled
-                  ? 'Download a PDF of orders per seller'
-                  : 'Select only Planned trips to download their seller-wise orders'
-              }
-            >
-              <Receipt className="w-4 h-4" />
-              Seller Wise Orders
-            </Button>
           </div>
         </div>
         <p className="text-sm text-gray-600">
@@ -879,6 +866,68 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
               <p className="text-xs text-gray-700 font-medium">Scheduled for delivery</p>
             </div>
           </div>
+
+          {/* Bulk selection actions bar */}
+          {selectedTripIds.size > 0 && (
+            <div className="flex items-center justify-end gap-3 mb-3">
+              <span className="text-sm text-gray-600">{selectedTripIds.size} selected</span>
+              <div className="relative" ref={bulkActionsRef}>
+                <Button
+                  onClick={() => setIsBulkActionsOpen(!isBulkActionsOpen)}
+                  variant="default"
+                  className="gap-2 bg-[#2D6EF5] hover:bg-[#2D6EF5]/90"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                  Actions
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isBulkActionsOpen ? 'rotate-180' : ''}`} />
+                </Button>
+
+                {isBulkActionsOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                      {selectedTripIds.size} Trip{selectedTripIds.size === 1 ? '' : 's'} Selected
+                    </p>
+
+                    <button
+                      onClick={() => {
+                        if (!isPickupListEnabled) return;
+                        handleDownloadPickupList();
+                        setIsBulkActionsOpen(false);
+                      }}
+                      disabled={!isPickupListEnabled}
+                      title={isPickupListEnabled ? undefined : 'Select only Planned trips to download their pickup list'}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-left transition-colors ${
+                        isPickupListEnabled
+                          ? 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
+                          : 'text-gray-400 cursor-not-allowed bg-gray-50'
+                      }`}
+                    >
+                      <ClipboardList className={`w-5 h-5 ${isPickupListEnabled ? 'text-[#2D6EF5]' : 'text-gray-300'}`} />
+                      <span className="text-sm">Seller Pickup List</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (!isPickupListEnabled) return;
+                        handleDownloadSellerOrders();
+                        setIsBulkActionsOpen(false);
+                      }}
+                      disabled={!isPickupListEnabled}
+                      title={isPickupListEnabled ? undefined : 'Select only Planned trips to download their seller-wise orders'}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-left transition-colors ${
+                        isPickupListEnabled
+                          ? 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
+                          : 'text-gray-400 cursor-not-allowed bg-gray-50'
+                      }`}
+                    >
+                      <Receipt className={`w-5 h-5 ${isPickupListEnabled ? 'text-[#2D6EF5]' : 'text-gray-300'}`} />
+                      <span className="text-sm">Seller Wise Orders</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Trips Table */}
           <div className="border border-gray-200 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
