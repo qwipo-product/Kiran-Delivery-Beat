@@ -22,7 +22,7 @@ import type { MergedOrder } from './components/MergeOrdersDialog';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'3pl' | 'self'>('3pl');
-  const [activeMenuItem, setActiveMenuItem] = useState('orders');
+  const [activeMenuItem, setActiveMenuItem] = useState('trips');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showCreateOrder, setShowCreateOrder] = useState(false);
