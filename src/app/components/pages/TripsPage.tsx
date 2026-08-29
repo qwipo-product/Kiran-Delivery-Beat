@@ -541,7 +541,7 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
               }
             >
               <ClipboardList className="w-4 h-4" />
-              Pickup List
+              Seller Pickup List
             </Button>
           </div>
         </div>
