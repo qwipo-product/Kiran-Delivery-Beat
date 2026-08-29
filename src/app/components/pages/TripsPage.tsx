@@ -296,7 +296,12 @@ interface TripsPageProps {
 }
 
 export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps) {
-  const allTrips = React.useMemo(() => [...extraTrips, ...mockTrips], [extraTrips]);
+  const allTrips = React.useMemo(() => {
+    // Newest-created trips first: dynamically booked trips (already prepended
+    // newest-first) come before the seed trips, which are sorted by id descending.
+    const sortedMockTrips = [...mockTrips].sort((a, b) => Number(b.id) - Number(a.id));
+    return [...extraTrips, ...sortedMockTrips];
+  }, [extraTrips]);
   const trips = React.useMemo(
     () => allTrips.filter(t => (t.deliveryType ?? '3pl') === activeTab),
     [allTrips, activeTab]
