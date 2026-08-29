@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { Truck, BarChart3, CheckCircle2, Calendar, MapPin, Eye, Filter, Map, Hash } from 'lucide-react';
+import { Truck, BarChart3, CheckCircle2, Calendar, MapPin, Eye, Filter, Map as MapIcon, Hash, ClipboardList } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Pagination } from '../Pagination';
@@ -20,6 +24,7 @@ export interface Trip {
   arrivalTime: string;
   charges: string;
   deliveryType?: '3pl' | 'self';
+  seller?: string;
 }
 
 const mockTrips: Trip[] = [
@@ -33,6 +38,7 @@ const mockTrips: Trip[] = [
     arrivalTime: '2026-02-18 09:40 AM',
     charges: '₹ 2,300.00',
     deliveryType: '3pl',
+    seller: 'Sree Venkateswara Traders',
   },
   {
     id: '2',
@@ -44,6 +50,7 @@ const mockTrips: Trip[] = [
     arrivalTime: '2026-02-18 09:00 AM',
     charges: '₹ 2,300.00',
     deliveryType: '3pl',
+    seller: 'Sri Sarda Enterprises',
   },
   {
     id: '3',
@@ -55,6 +62,7 @@ const mockTrips: Trip[] = [
     arrivalTime: '2026-02-17 09:34 AM',
     charges: '₹ 2,300.00',
     deliveryType: '3pl',
+    seller: 'Sree Venkateswara Traders',
   },
   {
     id: '4',
@@ -66,6 +74,7 @@ const mockTrips: Trip[] = [
     arrivalTime: '2026-02-17 09:56 AM',
     charges: '₹ 2,300.00',
     deliveryType: '3pl',
+    seller: 'SR Enterprises',
   },
   {
     id: '5',
@@ -77,6 +86,7 @@ const mockTrips: Trip[] = [
     arrivalTime: '2026-02-17 05:15 PM',
     charges: '₹ 2,300.00',
     deliveryType: '3pl',
+    seller: 'Sri Sarda Enterprises',
   },
   {
     id: '6',
@@ -88,6 +98,7 @@ const mockTrips: Trip[] = [
     arrivalTime: '2026-02-14 11:08 AM',
     charges: '₹ 3,100.00',
     deliveryType: '3pl',
+    seller: 'Sree Venkateswara Traders',
   },
   {
     id: '7',
@@ -99,6 +110,7 @@ const mockTrips: Trip[] = [
     arrivalTime: '2026-02-13 11:40 AM',
     charges: '₹ 1,850.00',
     deliveryType: '3pl',
+    seller: 'SR Enterprises',
   },
   {
     id: '8',
@@ -110,8 +122,137 @@ const mockTrips: Trip[] = [
     arrivalTime: '2026-02-18 10:30 AM',
     charges: '₹ 2,300.00',
     deliveryType: '3pl',
+    seller: 'Sree Venkateswara Traders',
   },
 ];
+
+// Pool of SKUs used to synthesize an indent-style pickup list per trip.
+interface PickupSku {
+  name: string;
+  mrp: number;
+  upc: number;
+}
+
+const PICKUP_SKU_POOL: PickupSku[] = [
+  { name: 'Goyal Gold Yellow Jowari -1 Bag, 50 Kg', mrp: 7000, upc: 0 },
+  { name: 'Shalimar R Atta (Poori) -1 Kg, 1 Pack', mrp: 60, upc: 25 },
+  { name: 'Shalimar Suji (Bombay Rava) -1 Kg, 1 Pack', mrp: 80, upc: 25 },
+  { name: 'Balaji Urad Gundu, 50 KG Bag', mrp: 8000, upc: 0 },
+  { name: 'Goyal Gold Fine Premium Quality Green Moong -1 Bag, 10 Kg', mrp: 2500, upc: 0 },
+  { name: 'Goyal Gold Kabuli Chana -1 Bag, 10 Kg', mrp: 2500, upc: 0 },
+  { name: 'Apple Brand Kabutar Jowari, 50 Kg Bag', mrp: 2000, upc: 0 },
+  { name: 'Double Diamond Premium Sharbati Wheat, 50 KG Bag', mrp: 2500, upc: 0 },
+  { name: 'Farm Gold Chakki Atta -1 Bag, 26 Kg', mrp: 1200, upc: 0 },
+  { name: 'Shalimar Maida, 1 KG Pack', mrp: 80, upc: 25 },
+  { name: 'Shivtara Bakery Maida, 50 KG Bag', mrp: 2500, upc: 0 },
+  { name: 'Sri Lohitha Soft Idly Ravva, 26 KG Bag', mrp: 1500, upc: 0 },
+];
+
+interface PickupListItem {
+  pickupOrder: number;
+  skuName: string;
+  vendor: string;
+  mrp: number;
+  upc: number;
+  quantity: number;
+  cases: number;
+  pieces: number;
+  orderNumbers: string[];
+}
+
+/** Deterministic pseudo-random SKU breakdown for a trip's pickup, seeded off the trip id. */
+function generatePickupItems(trip: Trip, pickupOrder: number): PickupListItem[] {
+  const seed = trip.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const itemCount = 3 + (seed % 4); // 3-6 SKUs
+  const vendor = trip.seller ?? 'Unassigned Seller';
+
+  return Array.from({ length: itemCount }, (_, i) => {
+    const sku = PICKUP_SKU_POOL[(seed + i * 5) % PICKUP_SKU_POOL.length];
+    const multiplier = 1 + ((seed + i * 7) % 5);
+    const quantity = sku.upc > 0 ? sku.upc * multiplier : multiplier;
+    const cases = sku.upc > 0 ? Math.floor(quantity / sku.upc) : 0;
+    const pieces = sku.upc > 0 ? quantity % sku.upc : quantity;
+    return {
+      pickupOrder,
+      skuName: sku.name,
+      vendor,
+      mrp: sku.mrp,
+      upc: sku.upc,
+      quantity,
+      cases,
+      pieces,
+      orderNumbers: [trip.tripNumber],
+    };
+  });
+}
+
+const PICKUP_SHEET_HEADERS = ['Pickup Order', 'SKU Name', 'Vendor', 'MRP', 'UPC', 'Quantity', 'Cases', 'Pieces', 'Order Numbers'];
+const PICKUP_COLUMN_WIDTHS = [{ wch: 12 }, { wch: 45 }, { wch: 22 }, { wch: 10 }, { wch: 8 }, { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 26 }];
+
+function pickupItemRow(item: PickupListItem) {
+  return [
+    item.pickupOrder,
+    item.skuName,
+    item.vendor,
+    item.mrp,
+    item.upc,
+    item.quantity,
+    item.cases,
+    item.pieces,
+    item.orderNumbers.join(', '),
+  ];
+}
+
+/** Strip characters that are illegal in Windows/macOS file names. */
+function sanitizeFileName(name: string) {
+  return name.replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Build a printable PDF (title + indent table + summary table) for one seller's pickup list. */
+function buildPickupListPdf(seller: string, generatedOn: string, items: PickupListItem[], summaryItems: PickupListItem[]) {
+  const doc = new jsPDF({ orientation: 'landscape' });
+  doc.setFontSize(13);
+  doc.text(`${seller} - Indent Sheet generated on ${generatedOn}`, 14, 15);
+
+  autoTable(doc, {
+    startY: 20,
+    head: [PICKUP_SHEET_HEADERS],
+    body: items.map(pickupItemRow),
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [45, 110, 245] },
+  });
+
+  const afterFirstTable = (doc as any).lastAutoTable.finalY + 12;
+  doc.setFontSize(13);
+  doc.text('Summary', 14, afterFirstTable);
+  autoTable(doc, {
+    startY: afterFirstTable + 5,
+    head: [PICKUP_SHEET_HEADERS],
+    body: summaryItems.map(pickupItemRow),
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [45, 110, 245] },
+  });
+
+  return doc;
+}
+
+/** Aggregate line items belonging to the same SKU + vendor, merging their order numbers. */
+function summarizePickupItems(items: PickupListItem[]): PickupListItem[] {
+  const bySku = new Map<string, PickupListItem>();
+  items.forEach(item => {
+    const key = `${item.skuName}::${item.vendor}`;
+    const existing = bySku.get(key);
+    if (existing) {
+      existing.quantity += item.quantity;
+      existing.cases += item.cases;
+      existing.pieces += item.pieces;
+      existing.orderNumbers = [...existing.orderNumbers, ...item.orderNumbers];
+    } else {
+      bySku.set(key, { ...item, orderNumbers: [...item.orderNumbers] });
+    }
+  });
+  return Array.from(bySku.values());
+}
 
 interface TripsPageProps {
   extraTrips?: Trip[];
@@ -251,6 +392,70 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
     return filteredTrips;
   };
 
+  // Trips currently selected, and whether they're eligible for a pickup list
+  // (only trips still in "Planned" status haven't been picked up yet).
+  const selectedTripsList = filteredTrips.filter(trip => selectedTripIds.has(trip.id));
+  const isPickupListEnabled = selectedTripsList.length > 0 && selectedTripsList.every(trip => trip.status === 'Planned');
+
+  // Download a separate Excel + PDF pickup list (indent sheet) per seller, for the selected trips.
+  const handleDownloadPickupList = () => {
+    if (selectedTripsList.length === 0) {
+      toast.error('Select at least one trip to download its pickup list.');
+      return;
+    }
+    if (!isPickupListEnabled) {
+      toast.error('Pickup list can only be downloaded for trips that are still Planned.');
+      return;
+    }
+
+    const sellerGroups = new Map<string, Trip[]>();
+    selectedTripsList.forEach(trip => {
+      const seller = trip.seller ?? 'Unassigned Seller';
+      const group = sellerGroups.get(seller) ?? [];
+      group.push(trip);
+      sellerGroups.set(seller, group);
+    });
+
+    const generatedOn = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const fileDate = new Date().toISOString().slice(0, 10);
+
+    sellerGroups.forEach((sellerTrips, seller) => {
+      const items = sellerTrips.flatMap((trip, i) => generatePickupItems(trip, i + 1));
+      const summaryItems = summarizePickupItems(items);
+      const fileBase = `${sanitizeFileName(seller)} - Pickup List - ${fileDate}`;
+
+      // Excel workbook: raw indent-sheet rows plus a per-seller SKU summary
+      const book = XLSX.utils.book_new();
+      const detailSheet = XLSX.utils.aoa_to_sheet([
+        [`${seller} - Indent Sheet generated on ${generatedOn}`],
+        [],
+        PICKUP_SHEET_HEADERS,
+        ...items.map(pickupItemRow),
+      ]);
+      detailSheet['!cols'] = PICKUP_COLUMN_WIDTHS;
+      XLSX.utils.book_append_sheet(book, detailSheet, 'Indent Sheet');
+
+      const summarySheet = XLSX.utils.aoa_to_sheet([
+        [`${seller} - Summary`],
+        [],
+        PICKUP_SHEET_HEADERS,
+        ...summaryItems.map(pickupItemRow),
+      ]);
+      summarySheet['!cols'] = PICKUP_COLUMN_WIDTHS;
+      XLSX.utils.book_append_sheet(book, summarySheet, 'Summary');
+
+      XLSX.writeFile(book, `${fileBase}.xlsx`);
+
+      // PDF with the same two tables, for printing/sharing
+      const pdf = buildPickupListPdf(seller, generatedOn, items, summaryItems);
+      pdf.save(`${fileBase}.pdf`);
+    });
+
+    toast.success(
+      `Pickup list downloaded (Excel + PDF) for ${sellerGroups.size} seller${sellerGroups.size === 1 ? '' : 's'}.`
+    );
+  };
+
   // If a trip is selected, show trip details page
   if (selectedTripId) {
     const selectedTrip = trips.find(t => t.id === selectedTripId) ?? null;
@@ -272,16 +477,30 @@ export function TripsPage({ extraTrips = [], activeTab = '3pl' }: TripsPageProps
               variant="outline"
               className="gap-2"
             >
-              <Map className="w-4 h-4" />
+              <MapIcon className="w-4 h-4" />
               Map View
             </Button>
-            <Button 
+            <Button
               onClick={() => setIsFilterDialogOpen(true)}
               variant="outline"
               className="gap-2"
             >
               <Filter className="w-4 h-4" />
               Filter
+            </Button>
+            <Button
+              onClick={handleDownloadPickupList}
+              variant="outline"
+              className="gap-2"
+              disabled={!isPickupListEnabled}
+              title={
+                isPickupListEnabled
+                  ? 'Download an Excel + PDF pickup list per seller'
+                  : 'Select only Planned trips to download their pickup list'
+              }
+            >
+              <ClipboardList className="w-4 h-4" />
+              Pickup List
             </Button>
           </div>
         </div>
